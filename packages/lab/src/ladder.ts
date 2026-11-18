@@ -15,12 +15,7 @@ const WEAKEST = {
 const round2 = (value: number): number => Math.round(value * 100) / 100;
 
 /** Profil mit Stärke s zwischen 0 (schwächste Stufe) und 1 (Ausgangsprofil). */
-function weakenedProfile(
-  base: BotProfile,
-  strength: number,
-  id: string,
-  name: string,
-): BotProfile {
+function weakenedProfile(base: BotProfile, strength: number, id: string, name: string): BotProfile {
   const weakness = 1 - strength;
   return {
     ...base,

@@ -25,14 +25,7 @@ export interface AppProfiles {
   readonly ladder: readonly BotProfile[];
 }
 
-const APP_PROFILES_FILE = join(
-  import.meta.dirname,
-  '..',
-  '..',
-  'app',
-  'public',
-  'profiles.json',
-);
+const APP_PROFILES_FILE = join(import.meta.dirname, '..', '..', 'app', 'public', 'profiles.json');
 
 /**
  * Vermisst alle Leiter-Profile in einem gemeinsamen Turnier und ordnet die Stufen zu.
