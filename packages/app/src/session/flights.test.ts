@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { anchorKey, flightDuration, flightsFor, FLIGHT_MS } from './flights.ts';
+import { anchorKey, flightDuration, flightsFor } from './flights.ts';
+
+const FLIGHT_MS = 600;
 import { cardFor, viewWith } from './test-views.ts';
 
 const before = viewWith({ phase: 'drawn', drawnCard: cardFor(2) });
@@ -11,6 +13,7 @@ describe('flightsFor', () => {
       [{ type: 'drew', player: 0 }],
       viewWith({}),
       viewWith({ phase: 'drawn', drawnCard: cardFor(5) }),
+      FLIGHT_MS,
     );
     expect(own).toEqual([
       {
@@ -20,7 +23,7 @@ describe('flightsFor', () => {
         delayMs: 0,
       },
     ]);
-    expect(flightsFor([{ type: 'drew', player: 1 }], after, after)[0]?.face).toEqual({
+    expect(flightsFor([{ type: 'drew', player: 1 }], after, after, FLIGHT_MS)[0]?.face).toEqual({
       kind: 'back',
     });
   });
@@ -30,6 +33,7 @@ describe('flightsFor', () => {
       [{ type: 'kept', player: 0, slot: 2, discarded: cardFor(13) }],
       before,
       after,
+      FLIGHT_MS,
     );
     expect(plans.map((p) => [anchorKey(p.from), anchorKey(p.to)])).toEqual([
       ['drawn', 'slot:0:2'],
@@ -44,6 +48,7 @@ describe('flightsFor', () => {
       [{ type: 'swapped', player: 1, slot: 0, target: 2, targetSlot: 3 }],
       before,
       after,
+      FLIGHT_MS,
     );
     expect(plans.map((p) => [anchorKey(p.from), anchorKey(p.to)])).toEqual([
       ['slot:1:0', 'slot:2:3'],
@@ -57,10 +62,11 @@ describe('flightsFor', () => {
       [{ type: 'matchFailed', player: 1, slot: 0, card: cardFor(4), penaltySlot: 4 }],
       before,
       after,
+      FLIGHT_MS,
     );
     expect(plans.map((p) => p.delayMs)).toEqual([0, FLIGHT_MS, 2 * FLIGHT_MS]);
     expect(anchorKey(plans[2]?.to ?? { kind: 'drawn' })).toBe('slot:1:4');
-    expect(flightDuration(plans)).toBe(3 * FLIGHT_MS);
+    expect(flightDuration(plans, FLIGHT_MS)).toBe(3 * FLIGHT_MS);
   });
 
   it('bewegt nichts beim Klopfen oder Anschauen', () => {
@@ -72,8 +78,9 @@ describe('flightsFor', () => {
         ],
         before,
         after,
+        FLIGHT_MS,
       ),
     ).toEqual([]);
-    expect(flightDuration([])).toBe(0);
+    expect(flightDuration([], FLIGHT_MS)).toBe(0);
   });
 });

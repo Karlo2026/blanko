@@ -7,6 +7,7 @@ import { StatsPage } from './components/StatsPage.tsx';
 import { loadAppProfiles, type AppProfiles } from './profiles.ts';
 import { initialRating, loadRating, saveRating, type PlayerRating } from './session/rating.ts';
 import type { SessionMode } from './session/session.ts';
+import { loadTempo, saveTempo, type Tempo } from './session/tempo.ts';
 import { addRound, addSession, loadStats, saveStats, type Stats } from './session/stats.ts';
 
 interface Game {
@@ -28,6 +29,11 @@ export function App() {
   const [game, setGame] = useState<Game | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [stats, setStats] = useState<Stats>(() => loadStats(localStorage));
+  const [tempo, setTempo] = useState<Tempo>(() => loadTempo(localStorage));
+  const changeTempo = (next: Tempo): void => {
+    saveTempo(localStorage, next);
+    setTempo(next);
+  };
 
   useEffect(() => {
     loadAppProfiles().then(
@@ -66,6 +72,8 @@ export function App() {
         <StartScreen
           levels={profiles.levels}
           rating={rating.rating}
+          tempo={tempo}
+          onTempo={changeTempo}
           onStart={(mode, botCount) => {
             updateStats(addSession);
             setGame({ mode, botCount, id: Date.now() });
@@ -82,6 +90,7 @@ export function App() {
           key={game.id}
           mode={game.mode}
           botCount={game.botCount}
+          tempo={tempo}
           ladder={profiles.ladder}
           rating={rating}
           onRatingChange={changeRating}
@@ -98,6 +107,8 @@ export function App() {
       )}
       {overlay === 'menu' ? (
         <Menu
+          tempo={tempo}
+          onTempo={changeTempo}
           onResume={() => {
             setOverlay(null);
           }}

@@ -11,12 +11,14 @@ import {
   type Session,
   type SessionMode,
 } from '../session/session.ts';
+import type { Tempo } from '../session/tempo.ts';
 import { RoundTable } from './RoundTable.tsx';
 import { ScoreSheet } from './ScoreSheet.tsx';
 
 interface GameScreenProps {
   readonly mode: SessionMode;
   readonly botCount: number;
+  readonly tempo: Tempo;
   readonly ladder: readonly BotProfile[];
   readonly rating: PlayerRating;
   readonly onRatingChange: (rating: PlayerRating) => void;
@@ -43,7 +45,8 @@ function profileFor(
 
 /** Eine Sitzung aus beliebig vielen Runden; die Platzierungspunkte werden aufsummiert. */
 export function GameScreen(props: GameScreenProps) {
-  const { mode, botCount, ladder, rating, onRatingChange, onRoundScored, onMenu, onEnd } = props;
+  const { mode, botCount, tempo, ladder, rating, onRatingChange, onRoundScored, onMenu, onEnd } =
+    props;
   const rng = useRef(createRng(Date.now() % 2 ** 31)).current;
   const [session, setSession] = useState<Session>(() =>
     createSession(mode, profileFor(mode, ladder, rating.rating, botCount + 1), botCount, rng),
@@ -90,6 +93,7 @@ export function GameScreen(props: GameScreenProps) {
         session={session}
         start={round.start}
         rng={rng}
+        tempo={tempo}
         ratingChange={rating.rating - round.ratingBefore}
         nextOpponentRating={mode.kind === 'dynamic' ? session.profile.rating : null}
         onScored={scored}

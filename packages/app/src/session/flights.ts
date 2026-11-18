@@ -18,9 +18,6 @@ export interface FlightPlan {
   readonly delayMs: number;
 }
 
-/** Dauer eines Flugs; Folgebewegungen (Strafkarte nach falschem Ablegen) starten danach. */
-export const FLIGHT_MS = 600;
-
 export function anchorKey(anchor: Anchor): string {
   return anchor.kind === 'slot'
     ? `slot:${String(anchor.player)}:${String(anchor.slot)}`
@@ -33,12 +30,14 @@ const slot = (player: number, index: number): Anchor => ({ kind: 'slot', player,
 /**
  * Welche Karten sich bei diesen Ereignissen sichtbar bewegen. Gesehen wird wie am echten Tisch:
  * Die eigene gezogene Karte offen, gezogene Karten der Gegner verdeckt, Abgelegtes offen.
- * `before` ist die Sicht des Menschen vor der Aktion, `after` danach.
+ * `before` ist die Sicht des Menschen vor der Aktion, `after` danach. Folgebewegungen (Strafkarte
+ * nach falschem Ablegen) starten jeweils nach einer Flugdauer `flightMs`.
  */
 export function flightsFor(
   events: readonly GameEvent[],
   before: PlayerView,
   after: PlayerView,
+  flightMs: number,
 ): FlightPlan[] {
   return events.flatMap((event): FlightPlan[] => {
     const now = (from: Anchor, to: Anchor, face: CardFace, delayMs = 0): FlightPlan => ({
@@ -104,14 +103,14 @@ export function flightsFor(
             { kind: 'discardPile' },
             slot(event.player, event.slot),
             { kind: 'face', card: event.card },
-            FLIGHT_MS,
+            flightMs,
           ),
         ];
         return event.penaltySlot === null
           ? back
           : [
               ...back,
-              now({ kind: 'drawPile' }, slot(event.player, event.penaltySlot), BACK, 2 * FLIGHT_MS),
+              now({ kind: 'drawPile' }, slot(event.player, event.penaltySlot), BACK, 2 * flightMs),
             ];
       }
       case 'peekedOwn':
@@ -124,6 +123,9 @@ export function flightsFor(
 }
 
 /** Gesamtdauer aller Flüge, damit der nächste Zug erst danach beginnt. */
-export function flightDuration(plans: readonly Pick<FlightPlan, 'delayMs'>[]): number {
-  return plans.reduce((longest, plan) => Math.max(longest, plan.delayMs + FLIGHT_MS), 0);
+export function flightDuration(
+  plans: readonly Pick<FlightPlan, 'delayMs'>[],
+  flightMs: number,
+): number {
+  return plans.reduce((longest, plan) => Math.max(longest, plan.delayMs + flightMs), 0);
 }

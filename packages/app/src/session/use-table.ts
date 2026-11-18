@@ -16,10 +16,9 @@ import { BotClient } from './bot-client.ts';
 import { anchorKey, flightDuration, flightsFor } from './flights.ts';
 import { NO_SELECTION, resolveTap, type Selection, type Tap } from './interaction.ts';
 import { HUMAN, type Session } from './session.ts';
+import type { Tempo } from './tempo.ts';
 import { changedSlots, moveText, statusText } from './texts.ts';
 
-/** Sichtbare Pause pro Bot-Zug, damit man Züge und Statuszeile verfolgen kann. */
-const BOT_PAUSE_MS = 1200;
 /** So lange bleibt eine per 8 oder 9 angeschaute Karte offen. */
 const REVEAL_MS = 2200;
 
@@ -72,6 +71,7 @@ export function useTable(
   session: Session,
   start: GameState,
   rng: Rng,
+  tempo: Tempo,
   onScored: (score: RoundScore) => void,
 ): Table {
   const initial: TableState = {
@@ -90,6 +90,9 @@ export function useTable(
   const nextFlightId = useRef(1);
   const onScoredRef = useRef(onScored);
   onScoredRef.current = onScored;
+  // Das Tempo lässt sich mitten in der Runde ändern; die Zeitgeber lesen immer den aktuellen Wert.
+  const tempoRef = useRef(tempo);
+  tempoRef.current = tempo;
 
   const commit = (next: TableState): void => {
     tableRef.current = next;
@@ -112,7 +115,12 @@ export function useTable(
     // Startpositionen jetzt messen, solange noch der alte Zustand gezeichnet ist.
     const plans = prefersReducedMotion()
       ? []
-      : flightsFor(events, getPlayerView(current.game, HUMAN), getPlayerView(state, HUMAN));
+      : flightsFor(
+          events,
+          getPlayerView(current.game, HUMAN),
+          getPlayerView(state, HUMAN),
+          tempoRef.current.flightMs,
+        );
     const flights = plans.flatMap((plan): Flight[] => {
       const from = measureAnchor(anchorKey(plan.from));
       return from === null
@@ -124,6 +132,7 @@ export function useTable(
               toKey: anchorKey(plan.to),
               face: plan.face,
               delayMs: plan.delayMs,
+              durationMs: tempoRef.current.flightMs,
             },
           ];
     });
@@ -163,7 +172,7 @@ export function useTable(
             if (!cancelled && tableRef.current.game === game) perform(action, NO_SELECTION);
           });
       },
-      reveal === null ? BOT_PAUSE_MS : REVEAL_MS,
+      reveal === null ? tempoRef.current.botPauseMs : REVEAL_MS,
     );
     return () => {
       cancelled = true;
@@ -178,7 +187,10 @@ export function useTable(
       () => {
         commit({ ...tableRef.current, flights: [] });
       },
-      flightDuration(table.flights.map((f) => ({ delayMs: f.delayMs }))),
+      flightDuration(
+        table.flights.map((f) => ({ delayMs: f.delayMs })),
+        Math.max(0, ...table.flights.map((f) => f.durationMs)),
+      ),
     );
     return () => {
       clearTimeout(timer);

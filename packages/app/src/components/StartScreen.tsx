@@ -2,11 +2,15 @@ import { useState } from 'react';
 import type { Level } from '../profiles.ts';
 import { nearestLevel } from '../session/rating.ts';
 import { MAX_BOTS, type SessionMode } from '../session/session.ts';
+import type { Tempo } from '../session/tempo.ts';
+import { TempoChoice } from './TempoChoice.tsx';
 
 interface StartScreenProps {
   readonly levels: readonly Level[];
   /** Aktuelle Spielerwertung, angezeigt und Grundlage für den dynamischen Modus. */
   readonly rating: number;
+  readonly tempo: Tempo;
+  readonly onTempo: (tempo: Tempo) => void;
   readonly onStart: (mode: SessionMode, botCount: number) => void;
   readonly onRules: () => void;
   readonly onStats: () => void;
@@ -16,7 +20,15 @@ const BOT_COUNTS = Array.from({ length: MAX_BOTS }, (_, i) => i + 1);
 const DYNAMIC = 'dynamisch';
 
 /** Vor der Sitzung: Zahl der Gegner und Stufe wählen. */
-export function StartScreen({ levels, rating, onStart, onRules, onStats }: StartScreenProps) {
+export function StartScreen({
+  levels,
+  rating,
+  tempo,
+  onTempo,
+  onStart,
+  onRules,
+  onStats,
+}: StartScreenProps) {
   const [botCount, setBotCount] = useState(3);
   const [levelId, setLevelId] = useState(levels[1]?.level ?? levels[0]?.level ?? '');
   const level = levels.find((l) => l.level === levelId);
@@ -81,6 +93,8 @@ export function StartScreen({ levels, rating, onStart, onRules, onStats }: Start
         {near === undefined ? '' : ` (etwa ${near.label})`}.
         {levelId === DYNAMIC ? ' Dynamisch wählt jede Runde Gegner, die so stark sind wie du.' : ''}
       </p>
+      <h2>Tempo</h2>
+      <TempoChoice tempo={tempo} onChange={onTempo} />
       <div className="button-row go">
         <button type="button" className="text-button" onClick={onRules}>
           Regeln

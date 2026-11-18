@@ -1,5 +1,4 @@
 import { useLayoutEffect, useRef } from 'react';
-import { FLIGHT_MS } from '../session/flights.ts';
 import { CardView, type CardFace } from './CardView.tsx';
 
 /** Eine fliegende Karte: Startposition schon gemessen, Ziel wird nach dem Neuzeichnen gesucht. */
@@ -9,6 +8,7 @@ export interface Flight {
   readonly toKey: string;
   readonly face: CardFace;
   readonly delayMs: number;
+  readonly durationMs: number;
 }
 
 /** Position eines Ankers auf dem Bildschirm; null, wenn er gerade nicht gezeichnet ist. */
@@ -33,7 +33,7 @@ function FlyingCard({ flight }: { readonly flight: Flight }) {
           transform: `translate(${String(dx)}px, ${String(dy)}px) scale(${String(scaleX)}, ${String(scaleY)})`,
         },
       ],
-      { duration: FLIGHT_MS, delay: flight.delayMs, easing: 'ease-in-out', fill: 'both' },
+      { duration: flight.durationMs, delay: flight.delayMs, easing: 'ease-in-out', fill: 'both' },
     );
     return () => {
       animation.cancel();

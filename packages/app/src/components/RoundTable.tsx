@@ -2,6 +2,7 @@ import type { GameState, RoundScore, Rng } from '@blanko/engine';
 import { seatPositions } from '../session/display.ts';
 import { mainButton, tappableKeys } from '../session/interaction.ts';
 import type { Session } from '../session/session.ts';
+import type { Tempo } from '../session/tempo.ts';
 import { hintText } from '../session/texts.ts';
 import { useTable } from '../session/use-table.ts';
 import { FlightLayer } from './FlightLayer.tsx';
@@ -14,6 +15,7 @@ interface RoundTableProps {
   readonly session: Session;
   readonly start: GameState;
   readonly rng: Rng;
+  readonly tempo: Tempo;
   readonly ratingChange: number;
   readonly nextOpponentRating: number | null;
   readonly onScored: (score: RoundScore) => void;
@@ -26,13 +28,14 @@ export function RoundTable({
   session,
   start,
   rng,
+  tempo,
   ratingChange,
   nextOpponentRating,
   onScored,
   onNextRound,
   onEndSession,
 }: RoundTableProps) {
-  const table = useTable(session, start, rng, onScored);
+  const table = useTable(session, start, rng, tempo, onScored);
   const { view, legal, selection } = table;
   // Während Karten fliegen, ist nichts antippbar und der Knopf ausgeblendet.
   const tappable = table.busy ? new Set<string>() : tappableKeys(view, legal, selection);
