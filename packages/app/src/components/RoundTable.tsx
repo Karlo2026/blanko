@@ -13,6 +13,8 @@ interface RoundTableProps {
   readonly session: Session;
   readonly start: GameState;
   readonly rng: Rng;
+  readonly ratingChange: number;
+  readonly nextOpponentRating: number | null;
   readonly onScored: (score: RoundScore) => void;
   readonly onNextRound: () => void;
   readonly onEndSession: () => void;
@@ -23,6 +25,8 @@ export function RoundTable({
   session,
   start,
   rng,
+  ratingChange,
+  nextOpponentRating,
   onScored,
   onNextRound,
   onEndSession,
@@ -85,6 +89,8 @@ export function RoundTable({
           session={session}
           score={table.score}
           knocker={view.knocker}
+          ratingChange={ratingChange}
+          nextOpponentRating={nextOpponentRating}
           onNext={onNextRound}
           onEnd={onEndSession}
         />

@@ -1,21 +1,32 @@
 import { useState } from 'react';
 import type { Level } from '../profiles.ts';
-import { MAX_BOTS } from '../session/session.ts';
+import { nearestLevel } from '../session/rating.ts';
+import { MAX_BOTS, type SessionMode } from '../session/session.ts';
 
 interface StartScreenProps {
   readonly levels: readonly Level[];
-  readonly onStart: (level: Level, botCount: number) => void;
+  /** Aktuelle Spielerwertung, angezeigt und Grundlage für den dynamischen Modus. */
+  readonly rating: number;
+  readonly onStart: (mode: SessionMode, botCount: number) => void;
   readonly onRules: () => void;
   readonly onStats: () => void;
 }
 
 const BOT_COUNTS = Array.from({ length: MAX_BOTS }, (_, i) => i + 1);
+const DYNAMIC = 'dynamisch';
 
 /** Vor der Sitzung: Zahl der Gegner und Stufe wählen. */
-export function StartScreen({ levels, onStart, onRules, onStats }: StartScreenProps) {
+export function StartScreen({ levels, rating, onStart, onRules, onStats }: StartScreenProps) {
   const [botCount, setBotCount] = useState(3);
   const [levelId, setLevelId] = useState(levels[1]?.level ?? levels[0]?.level ?? '');
   const level = levels.find((l) => l.level === levelId);
+  const mode: SessionMode | null =
+    levelId === DYNAMIC
+      ? { kind: 'dynamic' }
+      : level === undefined
+        ? null
+        : { kind: 'fixed', level };
+  const near = nearestLevel(levels, rating);
   return (
     <div className="screen start">
       <p className="title">Blanko</p>
@@ -53,7 +64,23 @@ export function StartScreen({ levels, onStart, onRules, onStats }: StartScreenPr
             {l.label}
           </button>
         ))}
+        <button
+          type="button"
+          role="radio"
+          aria-checked={levelId === DYNAMIC}
+          className={`choice${levelId === DYNAMIC ? ' active' : ''}`}
+          onClick={() => {
+            setLevelId(DYNAMIC);
+          }}
+        >
+          Dynamisch
+        </button>
       </div>
+      <p className="hint-text">
+        Deine Stärke: {Math.round(rating)}
+        {near === undefined ? '' : ` (etwa ${near.label})`}.
+        {levelId === DYNAMIC ? ' Dynamisch wählt jede Runde Gegner, die so stark sind wie du.' : ''}
+      </p>
       <div className="button-row go">
         <button type="button" className="text-button" onClick={onRules}>
           Regeln
@@ -66,9 +93,9 @@ export function StartScreen({ levels, onStart, onRules, onStats }: StartScreenPr
         <button
           type="button"
           className="main-button knock"
-          disabled={level === undefined}
+          disabled={mode === null}
           onClick={() => {
-            if (level !== undefined) onStart(level, botCount);
+            if (mode !== null) onStart(mode, botCount);
           }}
         >
           Spiel starten

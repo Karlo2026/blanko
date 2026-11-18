@@ -87,7 +87,7 @@ export function useTable(
     const current = tableRef.current;
     const { state, events } = applyAction(current.game, action, rng);
     const memories = current.memories.map((memory, player) => {
-      const forgetRate = player === HUMAN ? 0 : session.level.profile.forgetRate;
+      const forgetRate = player === HUMAN ? 0 : session.profile.forgetRate;
       return forgetRate === 0
         ? memory
         : updateMemory(memory, events, getPlayerView(state, player), forgetRate, rng);
@@ -125,7 +125,7 @@ export function useTable(
         const player = game.current;
         const view = recall(getPlayerView(game, player), memories[player] ?? freshMemory);
         void clientRef.current
-          ?.chooseAction(session.level.profile, view, legalActions(game), rng.nextInt(2 ** 31))
+          ?.chooseAction(session.profile, view, legalActions(game), rng.nextInt(2 ** 31))
           .then((action) => {
             if (!cancelled && tableRef.current.game === game) perform(action, NO_SELECTION);
           });

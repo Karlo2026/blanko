@@ -5,6 +5,10 @@ interface RoundEndProps {
   readonly session: Session;
   readonly score: RoundScore;
   readonly knocker: number | null;
+  /** Veränderung der Spielerwertung durch diese Runde. */
+  readonly ratingChange: number;
+  /** Im dynamischen Modus: Wertung der Gegner in der nächsten Runde. */
+  readonly nextOpponentRating: number | null;
   readonly onNext: () => void;
   readonly onEnd: () => void;
 }
@@ -12,7 +16,15 @@ interface RoundEndProps {
 const signed = (value: number): string => (value > 0 ? `+${String(value)}` : String(value));
 
 /** Wertung nach dem Aufdecken: Handpunkte, Platz und Platzierungspunkte jedes Spielers. */
-export function RoundEnd({ session, score, knocker, onNext, onEnd }: RoundEndProps) {
+export function RoundEnd({
+  session,
+  score,
+  knocker,
+  ratingChange,
+  nextOpponentRating,
+  onNext,
+  onEnd,
+}: RoundEndProps) {
   return (
     <div className="round-end" role="dialog" aria-label="Rundenende">
       <h2>Runde vorbei</h2>
@@ -41,6 +53,12 @@ export function RoundEnd({ session, score, knocker, onNext, onEnd }: RoundEndPro
           ))}
         </tbody>
       </table>
+      <p className="rating-line">
+        Deine Stärke {signed(Math.round(ratingChange))}
+        {nextOpponentRating === null
+          ? ''
+          : ` · nächste Gegner: Stärke ${String(nextOpponentRating)}`}
+      </p>
       <div className="button-row">
         <button type="button" className="main-button" onClick={onEnd}>
           Sitzung beenden

@@ -10,8 +10,9 @@ Beide nutzen dieselbe Engine und dieselben Bots.
 
 ## Stand
 
-- Phase 1 bis 7 sind abgeschlossen; die iPhone-App ist spielbar und offline nutzbar
-  ([ADR 0006](docs/adr/0006-app.md)).
+- Phase 1 bis 8 sind abgeschlossen; die iPhone-App ist spielbar und offline nutzbar
+  ([ADR 0006](docs/adr/0006-app.md)), mit dynamischem Modus und Spielerwertung
+  ([ADR 0007](docs/adr/0007-dynamischer-modus.md)).
 - Phase 1 bis 6 im Einzelnen: Der IsmctsBot ist gleich stark wie der getunte RuleBot, aber
   nicht deutlich stärker ([ADR 0005](docs/adr/0005-ismcts-bot.md)).
 - Die vier Stufen und die Leiter für den dynamischen Modus liegen vermessen in

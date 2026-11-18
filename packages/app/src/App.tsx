@@ -4,28 +4,40 @@ import { Menu } from './components/Menu.tsx';
 import { RulesPage } from './components/RulesPage.tsx';
 import { StartScreen } from './components/StartScreen.tsx';
 import { StatsPage } from './components/StatsPage.tsx';
-import { loadLevels, type Level } from './profiles.ts';
+import { loadAppProfiles, type AppProfiles } from './profiles.ts';
+import { initialRating, loadRating, saveRating, type PlayerRating } from './session/rating.ts';
+import type { SessionMode } from './session/session.ts';
 import { addRound, addSession, loadStats, saveStats, type Stats } from './session/stats.ts';
 
 interface Game {
-  readonly level: Level;
+  readonly mode: SessionMode;
   readonly botCount: number;
   readonly id: number;
 }
 
 type Overlay = 'menu' | 'rules' | 'stats' | null;
 
+interface Loaded {
+  readonly profiles: AppProfiles;
+  readonly rating: PlayerRating;
+}
+
 export function App() {
-  const [levels, setLevels] = useState<Level[] | null>(null);
+  const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [game, setGame] = useState<Game | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [stats, setStats] = useState<Stats>(() => loadStats(localStorage));
 
   useEffect(() => {
-    loadLevels().then(setLevels, (e: unknown) => {
-      setError(e instanceof Error ? e.message : String(e));
-    });
+    loadAppProfiles().then(
+      (profiles) => {
+        setLoaded({ profiles, rating: loadRating(localStorage, initialRating(profiles.levels)) });
+      },
+      (e: unknown) => {
+        setError(e instanceof Error ? e.message : String(e));
+      },
+    );
   }, []);
 
   const updateStats = (change: (stats: Stats) => Stats): void => {
@@ -38,8 +50,13 @@ export function App() {
 
   if (error !== null)
     return <p className="error">Die Gegner konnten nicht geladen werden: {error}</p>;
-  if (levels === null) return null;
+  if (loaded === null) return null;
+  const { profiles, rating } = loaded;
 
+  const changeRating = (next: PlayerRating): void => {
+    saveRating(localStorage, next);
+    setLoaded({ profiles, rating: next });
+  };
   const back = (): void => {
     setOverlay(game === null ? null : 'menu');
   };
@@ -47,10 +64,11 @@ export function App() {
     <>
       {game === null ? (
         <StartScreen
-          levels={levels}
-          onStart={(level, botCount) => {
+          levels={profiles.levels}
+          rating={rating.rating}
+          onStart={(mode, botCount) => {
             updateStats(addSession);
-            setGame({ level, botCount, id: Date.now() });
+            setGame({ mode, botCount, id: Date.now() });
           }}
           onRules={() => {
             setOverlay('rules');
@@ -62,10 +80,13 @@ export function App() {
       ) : (
         <GameScreen
           key={game.id}
-          level={game.level}
+          mode={game.mode}
           botCount={game.botCount}
-          onRoundScored={(level, points, won) => {
-            updateStats((s) => addRound(s, level, points, won));
+          ladder={profiles.ladder}
+          rating={rating}
+          onRatingChange={changeRating}
+          onRoundScored={(key, points, won) => {
+            updateStats((s) => addRound(s, key, points, won));
           }}
           onMenu={() => {
             setOverlay('menu');
@@ -93,7 +114,9 @@ export function App() {
         />
       ) : null}
       {overlay === 'rules' ? <RulesPage onBack={back} /> : null}
-      {overlay === 'stats' ? <StatsPage stats={stats} levels={levels} onBack={back} /> : null}
+      {overlay === 'stats' ? (
+        <StatsPage stats={stats} levels={profiles.levels} rating={rating.rating} onBack={back} />
+      ) : null}
     </>
   );
 }
