@@ -30,3 +30,14 @@
   frischen Seeds signifikant bestätigen (2 Standardfehler), sonst bleibt der Champion.
 - **Dauerhafter Worker-Pool:** Worker bleiben zwischen Messungen bestehen und werden am Ende des
   Befehls beendet.
+
+## Nachtrag: ladder, export, analyze (Phase 6)
+
+- **Leiter statt einzeln getunter Stufen:** Alle Stufen entstehen aus einem starken Profil, das
+  schrittweise geschwächt wird (Fehlgriffe, Vergessen, gröberes Behalten, waghalsigeres Klopfen).
+  So liegen Stufen und Leiter auf einer gemeinsamen Elo-Skala; die Stufen sind Sprossen der Leiter.
+- **Export vermisst selbst:** `export` spielt ein eigenes Turnier, damit die Wertungen in
+  `profiles.json` immer zu den exportierten Profilen passen. Die Datei enthält keinen Zeitstempel.
+- **Analyse mit kontrafaktischen Partien:** An zufällig gewählten Entscheidungspunkten werden zwei
+  Alternativen mit denselben Zufallszahlen zu Ende gespielt. Die Analyse läuft einfädig; 15 000
+  Runden dauern gut eine Minute.

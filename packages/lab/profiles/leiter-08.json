@@ -1,0 +1,20 @@
+{
+  "id": "leiter-08",
+  "name": "Leiter 08",
+  "forgetRate": 0.01,
+  "mistakeRate": 0.13,
+  "rule": {
+    "keepMargin": 0.67,
+    "knockThresholds": [8.65, 5.7, 5.06, 5.18, 7.06],
+    "knockLead": 3,
+    "knockProgress": 0,
+    "knockWinProbability": 1.1,
+    "opponentLowBias": 0,
+    "peekOwnValue": 2.07,
+    "peekOpponentValue": 0.48,
+    "swapMargin": 1.73,
+    "suspicionThreshold": 1.2
+  },
+  "rating": null,
+  "type": "rule"
+}

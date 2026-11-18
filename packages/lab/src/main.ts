@@ -4,6 +4,10 @@ import { simulate, tournament, type RunOptions } from './commands.ts';
 import { closeWorkers, DEFAULT_WORKERS } from './parallel.ts';
 import { availableProfileIds, loadEntrant, saveProfile } from './profile-store.ts';
 import { resultFiles, toMarkdown, writeRunFiles } from './report.ts';
+import { analyze } from './analyze.ts';
+import { analysisFiles } from './analyze-report.ts';
+import { buildAppProfiles, writeAppProfiles } from './export.ts';
+import { ladderProfiles } from './ladder.ts';
 import { tune, type TuneMethod } from './tune.ts';
 import { tuneFiles } from './tune-report.ts';
 
@@ -16,7 +20,15 @@ const USAGE = `Blanko-Labor
 
 Profile liegen in packages/lab/profiles; „zufall“ ist der eingebaute Zufalls-Bot.
 Ohne --profiles spielt das Turnier mit allen vorhandenen Profilen.
-tune --save legt das Ergebnis als <profil>-getunt.json in packages/lab/profiles ab.`;
+  npm run lab -- ladder     --profile basis-getunt [--steps 10]
+  npm run lab -- analyze    --profile basis-getunt [--games 6000] [--seed 1]
+  npm run lab -- export     [--levels leiter-01,leiter-04,leiter-07,leiter-10] [--players 4]
+                            [--games 20000] [--seed 1] [--workers N]
+
+tune --save legt das Ergebnis als <profil>-getunt.json in packages/lab/profiles ab.
+ladder legt leiter-01 (schwächste) bis leiter-NN (Ausgangsprofil) in packages/lab/profiles ab.
+export vermisst alle leiter-* in einem Turnier und schreibt Stufen (Anfänger bis Meister) und
+Leiter mit Wertung nach packages/app/public/profiles.json.`;
 
 const OPTIONS = {
   seats: { type: 'string' },
@@ -25,6 +37,8 @@ const OPTIONS = {
   method: { type: 'string', default: 'evolve' },
   generations: { type: 'string', default: '20' },
   candidates: { type: 'string', default: '8' },
+  steps: { type: 'string', default: '10' },
+  levels: { type: 'string', default: 'leiter-01,leiter-04,leiter-07,leiter-10' },
   players: { type: 'string', default: '4' },
   games: { type: 'string' },
   seed: { type: 'string', default: '1' },
@@ -90,6 +104,42 @@ async function runTune(values: Values): Promise<CommandOutput> {
   return { text: `${files['report.md'] ?? ''}${saved}`, files };
 }
 
+function runLadder(values: Values): CommandOutput {
+  const entrant = loadEntrant(textOf(values, 'profile') ?? '');
+  if (entrant.kind !== 'profile') throw new Error('ladder braucht --profile');
+  const rungs = ladderProfiles(
+    entrant.profile,
+    positiveInt(textOf(values, 'steps') ?? '10', 'steps'),
+  );
+  const paths = rungs.map(saveProfile);
+  return {
+    text: `Leiter aus ${entrant.id} gespeichert:\n${paths.join('\n')}`,
+    files: { 'ladder.json': `${JSON.stringify(rungs, null, 2)}\n` },
+  };
+}
+
+async function runExport(values: Values): Promise<CommandOutput> {
+  const ladder = availableProfileIds()
+    .filter((id) => id.startsWith('leiter-'))
+    .map(loadEntrant);
+  const levelIds = list(textOf(values, 'levels') ?? '');
+  const players = positiveInt(textOf(values, 'players') ?? '4', 'players');
+  const { profiles, result } = await buildAppProfiles(
+    ladder,
+    levelIds,
+    players,
+    runOptions(values, 20_000),
+  );
+  const levels = profiles.levels.map(
+    (l) => `- ${l.label}: ${l.profile.id} (${String(l.profile.rating)})`,
+  );
+  const path = writeAppProfiles(profiles);
+  return {
+    text: `${toMarkdown(result)}\nStufen:\n${levels.join('\n')}\n\nGeschrieben: ${path}`,
+    files: { ...resultFiles(result), 'profiles.json': `${JSON.stringify(profiles, null, 2)}\n` },
+  };
+}
+
 async function run(command: string | undefined, values: Values): Promise<CommandOutput | null> {
   switch (command) {
     case 'simulate': {
@@ -106,6 +156,17 @@ async function run(command: string | undefined, values: Values): Promise<Command
     }
     case 'tune':
       return runTune(values);
+    case 'ladder':
+      return runLadder(values);
+    case 'export':
+      return runExport(values);
+    case 'analyze': {
+      const entrant = loadEntrant(textOf(values, 'profile') ?? '');
+      if (entrant.kind !== 'profile') throw new Error('analyze braucht --profile');
+      const { games, seed } = runOptions(values, 6000);
+      const files = analysisFiles(analyze(entrant.profile, games, seed), entrant.id, seed);
+      return { text: files['report.md'] ?? '', files };
+    }
     default:
       return null;
   }

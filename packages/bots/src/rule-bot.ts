@@ -186,9 +186,14 @@ function firstLegal(legal: readonly Action[]): Action {
   return first;
 }
 
-/** Ein Fehler ist ein zufälliger Zug; Klopfen bleibt davon ausgenommen, weil es die Runde entscheidet. */
+/**
+ * Ein Fehler ist ein plausibler Fehlgriff: falsch behalten, falsch abgelegt, Sonderkarte ungünstig
+ * genutzt. Klopfen und Ablegen auf Verdacht sind ausgenommen. Zufälliges Klopfen entschiede die Runde
+ * sofort, und weil es bis zu vier Verdachtsablagen gibt, wäre sonst fast jeder Fehler eine
+ * Strafkarte gewesen; schwache Stufen sammelten so im Schnitt über 50 Handpunkte.
+ */
 function chooseMistake(legal: readonly Action[], rng: Rng): Action {
-  const candidates = legal.filter((a) => a.type !== 'knock');
+  const candidates = legal.filter((a) => a.type !== 'knock' && a.type !== 'matchDiscard');
   return pickRandom(candidates.length > 0 ? candidates : legal, rng);
 }
 

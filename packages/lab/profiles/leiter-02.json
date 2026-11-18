@@ -1,0 +1,20 @@
+{
+  "id": "leiter-02",
+  "name": "Leiter 02",
+  "forgetRate": 0.03,
+  "mistakeRate": 0.53,
+  "rule": {
+    "keepMargin": 2.67,
+    "knockThresholds": [11.98, 9.03, 8.39, 8.51, 10.39],
+    "knockLead": 3,
+    "knockProgress": 0,
+    "knockWinProbability": 1.1,
+    "opponentLowBias": 0,
+    "peekOwnValue": 2.07,
+    "peekOpponentValue": 0.48,
+    "swapMargin": 1.73,
+    "suspicionThreshold": 1.2
+  },
+  "rating": null,
+  "type": "rule"
+}

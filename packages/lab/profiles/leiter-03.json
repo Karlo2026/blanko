@@ -1,0 +1,20 @@
+{
+  "id": "leiter-03",
+  "name": "Leiter 03",
+  "forgetRate": 0.02,
+  "mistakeRate": 0.47,
+  "rule": {
+    "keepMargin": 2.33,
+    "knockThresholds": [11.43, 8.48, 7.84, 7.96, 9.84],
+    "knockLead": 3,
+    "knockProgress": 0,
+    "knockWinProbability": 1.1,
+    "opponentLowBias": 0,
+    "peekOwnValue": 2.07,
+    "peekOpponentValue": 0.48,
+    "swapMargin": 1.73,
+    "suspicionThreshold": 1.2
+  },
+  "rating": null,
+  "type": "rule"
+}

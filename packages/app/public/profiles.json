@@ -1,0 +1,303 @@
+{
+  "playersPerTable": 4,
+  "levels": [
+    {
+      "level": "anfaenger",
+      "label": "Anfänger",
+      "profile": {
+        "id": "leiter-01",
+        "name": "Leiter 01",
+        "forgetRate": 0.03,
+        "mistakeRate": 0.6,
+        "rule": {
+          "keepMargin": 3,
+          "knockThresholds": [12.54, 9.59, 8.95, 9.07, 10.95],
+          "knockLead": 3,
+          "knockProgress": 0,
+          "knockWinProbability": 1.1,
+          "opponentLowBias": 0,
+          "peekOwnValue": 2.07,
+          "peekOpponentValue": 0.48,
+          "swapMargin": 1.73,
+          "suspicionThreshold": 1.2
+        },
+        "rating": 1346,
+        "type": "rule"
+      }
+    },
+    {
+      "level": "mittel",
+      "label": "Mittel",
+      "profile": {
+        "id": "leiter-04",
+        "name": "Leiter 04",
+        "forgetRate": 0.02,
+        "mistakeRate": 0.4,
+        "rule": {
+          "keepMargin": 2,
+          "knockThresholds": [10.87, 7.92, 7.28, 7.4, 9.28],
+          "knockLead": 3,
+          "knockProgress": 0,
+          "knockWinProbability": 1.1,
+          "opponentLowBias": 0,
+          "peekOwnValue": 2.07,
+          "peekOpponentValue": 0.48,
+          "swapMargin": 1.73,
+          "suspicionThreshold": 1.2
+        },
+        "rating": 1439,
+        "type": "rule"
+      }
+    },
+    {
+      "level": "stark",
+      "label": "Stark",
+      "profile": {
+        "id": "leiter-07",
+        "name": "Leiter 07",
+        "forgetRate": 0.01,
+        "mistakeRate": 0.2,
+        "rule": {
+          "keepMargin": 1,
+          "knockThresholds": [9.21, 6.26, 5.62, 5.74, 7.62],
+          "knockLead": 3,
+          "knockProgress": 0,
+          "knockWinProbability": 1.1,
+          "opponentLowBias": 0,
+          "peekOwnValue": 2.07,
+          "peekOpponentValue": 0.48,
+          "swapMargin": 1.73,
+          "suspicionThreshold": 1.2
+        },
+        "rating": 1556,
+        "type": "rule"
+      }
+    },
+    {
+      "level": "meister",
+      "label": "Meister",
+      "profile": {
+        "id": "leiter-10",
+        "name": "Leiter 10",
+        "forgetRate": 0,
+        "mistakeRate": 0,
+        "rule": {
+          "keepMargin": 0,
+          "knockThresholds": [7.54, 4.59, 3.95, 4.07, 5.95],
+          "knockLead": 3,
+          "knockProgress": 0,
+          "knockWinProbability": 1.1,
+          "opponentLowBias": 0,
+          "peekOwnValue": 2.07,
+          "peekOpponentValue": 0.48,
+          "swapMargin": 1.73,
+          "suspicionThreshold": 1.2
+        },
+        "rating": 1675,
+        "type": "rule"
+      }
+    }
+  ],
+  "ladder": [
+    {
+      "id": "leiter-01",
+      "name": "Leiter 01",
+      "forgetRate": 0.03,
+      "mistakeRate": 0.6,
+      "rule": {
+        "keepMargin": 3,
+        "knockThresholds": [12.54, 9.59, 8.95, 9.07, 10.95],
+        "knockLead": 3,
+        "knockProgress": 0,
+        "knockWinProbability": 1.1,
+        "opponentLowBias": 0,
+        "peekOwnValue": 2.07,
+        "peekOpponentValue": 0.48,
+        "swapMargin": 1.73,
+        "suspicionThreshold": 1.2
+      },
+      "rating": 1346,
+      "type": "rule"
+    },
+    {
+      "id": "leiter-02",
+      "name": "Leiter 02",
+      "forgetRate": 0.03,
+      "mistakeRate": 0.53,
+      "rule": {
+        "keepMargin": 2.67,
+        "knockThresholds": [11.98, 9.03, 8.39, 8.51, 10.39],
+        "knockLead": 3,
+        "knockProgress": 0,
+        "knockWinProbability": 1.1,
+        "opponentLowBias": 0,
+        "peekOwnValue": 2.07,
+        "peekOpponentValue": 0.48,
+        "swapMargin": 1.73,
+        "suspicionThreshold": 1.2
+      },
+      "rating": 1367,
+      "type": "rule"
+    },
+    {
+      "id": "leiter-03",
+      "name": "Leiter 03",
+      "forgetRate": 0.02,
+      "mistakeRate": 0.47,
+      "rule": {
+        "keepMargin": 2.33,
+        "knockThresholds": [11.43, 8.48, 7.84, 7.96, 9.84],
+        "knockLead": 3,
+        "knockProgress": 0,
+        "knockWinProbability": 1.1,
+        "opponentLowBias": 0,
+        "peekOwnValue": 2.07,
+        "peekOpponentValue": 0.48,
+        "swapMargin": 1.73,
+        "suspicionThreshold": 1.2
+      },
+      "rating": 1409,
+      "type": "rule"
+    },
+    {
+      "id": "leiter-04",
+      "name": "Leiter 04",
+      "forgetRate": 0.02,
+      "mistakeRate": 0.4,
+      "rule": {
+        "keepMargin": 2,
+        "knockThresholds": [10.87, 7.92, 7.28, 7.4, 9.28],
+        "knockLead": 3,
+        "knockProgress": 0,
+        "knockWinProbability": 1.1,
+        "opponentLowBias": 0,
+        "peekOwnValue": 2.07,
+        "peekOpponentValue": 0.48,
+        "swapMargin": 1.73,
+        "suspicionThreshold": 1.2
+      },
+      "rating": 1439,
+      "type": "rule"
+    },
+    {
+      "id": "leiter-05",
+      "name": "Leiter 05",
+      "forgetRate": 0.02,
+      "mistakeRate": 0.33,
+      "rule": {
+        "keepMargin": 1.67,
+        "knockThresholds": [10.32, 7.37, 6.73, 6.85, 8.73],
+        "knockLead": 3,
+        "knockProgress": 0,
+        "knockWinProbability": 1.1,
+        "opponentLowBias": 0,
+        "peekOwnValue": 2.07,
+        "peekOpponentValue": 0.48,
+        "swapMargin": 1.73,
+        "suspicionThreshold": 1.2
+      },
+      "rating": 1468,
+      "type": "rule"
+    },
+    {
+      "id": "leiter-06",
+      "name": "Leiter 06",
+      "forgetRate": 0.01,
+      "mistakeRate": 0.27,
+      "rule": {
+        "keepMargin": 1.33,
+        "knockThresholds": [9.76, 6.81, 6.17, 6.29, 8.17],
+        "knockLead": 3,
+        "knockProgress": 0,
+        "knockWinProbability": 1.1,
+        "opponentLowBias": 0,
+        "peekOwnValue": 2.07,
+        "peekOpponentValue": 0.48,
+        "swapMargin": 1.73,
+        "suspicionThreshold": 1.2
+      },
+      "rating": 1522,
+      "type": "rule"
+    },
+    {
+      "id": "leiter-07",
+      "name": "Leiter 07",
+      "forgetRate": 0.01,
+      "mistakeRate": 0.2,
+      "rule": {
+        "keepMargin": 1,
+        "knockThresholds": [9.21, 6.26, 5.62, 5.74, 7.62],
+        "knockLead": 3,
+        "knockProgress": 0,
+        "knockWinProbability": 1.1,
+        "opponentLowBias": 0,
+        "peekOwnValue": 2.07,
+        "peekOpponentValue": 0.48,
+        "swapMargin": 1.73,
+        "suspicionThreshold": 1.2
+      },
+      "rating": 1556,
+      "type": "rule"
+    },
+    {
+      "id": "leiter-08",
+      "name": "Leiter 08",
+      "forgetRate": 0.01,
+      "mistakeRate": 0.13,
+      "rule": {
+        "keepMargin": 0.67,
+        "knockThresholds": [8.65, 5.7, 5.06, 5.18, 7.06],
+        "knockLead": 3,
+        "knockProgress": 0,
+        "knockWinProbability": 1.1,
+        "opponentLowBias": 0,
+        "peekOwnValue": 2.07,
+        "peekOpponentValue": 0.48,
+        "swapMargin": 1.73,
+        "suspicionThreshold": 1.2
+      },
+      "rating": 1577,
+      "type": "rule"
+    },
+    {
+      "id": "leiter-09",
+      "name": "Leiter 09",
+      "forgetRate": 0,
+      "mistakeRate": 0.07,
+      "rule": {
+        "keepMargin": 0.33,
+        "knockThresholds": [8.1, 5.15, 4.51, 4.63, 6.51],
+        "knockLead": 3,
+        "knockProgress": 0,
+        "knockWinProbability": 1.1,
+        "opponentLowBias": 0,
+        "peekOwnValue": 2.07,
+        "peekOpponentValue": 0.48,
+        "swapMargin": 1.73,
+        "suspicionThreshold": 1.2
+      },
+      "rating": 1641,
+      "type": "rule"
+    },
+    {
+      "id": "leiter-10",
+      "name": "Leiter 10",
+      "forgetRate": 0,
+      "mistakeRate": 0,
+      "rule": {
+        "keepMargin": 0,
+        "knockThresholds": [7.54, 4.59, 3.95, 4.07, 5.95],
+        "knockLead": 3,
+        "knockProgress": 0,
+        "knockWinProbability": 1.1,
+        "opponentLowBias": 0,
+        "peekOwnValue": 2.07,
+        "peekOpponentValue": 0.48,
+        "swapMargin": 1.73,
+        "suspicionThreshold": 1.2
+      },
+      "rating": 1675,
+      "type": "rule"
+    }
+  ]
+}

@@ -10,9 +10,11 @@ Beide nutzen dieselbe Engine und dieselben Bots.
 
 ## Stand
 
-- Phase 1 bis 4 (Grundgerüst, Engine, Bots, Labor Teil 1) sind abgeschlossen; Phase 5 (IsmctsBot)
-  steht als Zwischenstand ([ADR 0005](docs/adr/0005-ismcts-bot.md)). `tune` aus Phase 6 ist
-  vorgezogen ([Ergebnis](docs/labor/2026-11-18-tune.md)).
+- Phase 1 bis 6 sind abgeschlossen. Der IsmctsBot ist gleich stark wie der getunte RuleBot, aber
+  nicht deutlich stärker ([ADR 0005](docs/adr/0005-ismcts-bot.md)).
+- Die vier Stufen und die Leiter für den dynamischen Modus liegen vermessen in
+  `packages/app/public/profiles.json`; dazu gibt es einen ersten
+  [Strategiebericht](docs/labor/2026-11-18-strategie.md).
 - Die Engine setzt alle Regeln, die Wertung und die Sicht pro Spieler um, siehe
   [Regeln](docs/regeln.md).
 - `bots` enthält Bot-Schnittstelle, Gedächtnis mit Vergessen, RuleBot, Zufalls-Bot,

@@ -1,6 +1,15 @@
 # ADR 0005: IsmctsBot
 
-**Status:** angenommen (Phase 5, Zwischenstand; gleich stark wie der getunte RuleBot)
+**Status:** abgeschlossen (Phase 5). Ziel „deutlich stärker als der beste RuleBot“ nicht erreicht.
+
+## Ergebnis
+
+Gegen den ursprünglichen RuleBot war der IsmctsBot messbar stärker (+0,13). Nach dem Tuning der
+Faustregeln (Phase 6, vorgezogen) ist er gleich stark wie der getunte RuleBot (−0,02 ± 0,03):
+Eine flache Suche mit Faustregel-Rollouts ist im Kern ein Verbesserungsschritt über diese
+Faustregeln, und `tune` holt denselben Gewinn direkt heraus. Für die App ist deshalb der getunte
+RuleBot die stärkste Stufe – gleich stark, aber um Größenordnungen schneller. Der IsmctsBot bleibt
+im Code als Grundlage für Phase 9 (Gegner lesen) und eine mögliche tiefere Suche.
 
 ## Entscheidungen
 
