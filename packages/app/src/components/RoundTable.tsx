@@ -4,6 +4,7 @@ import { mainButton, tappableKeys } from '../session/interaction.ts';
 import type { Session } from '../session/session.ts';
 import { hintText } from '../session/texts.ts';
 import { useTable } from '../session/use-table.ts';
+import { FlightLayer } from './FlightLayer.tsx';
 import { Opponent } from './Opponent.tsx';
 import { OwnHand } from './OwnHand.tsx';
 import { Piles } from './Piles.tsx';
@@ -33,8 +34,9 @@ export function RoundTable({
 }: RoundTableProps) {
   const table = useTable(session, start, rng, onScored);
   const { view, legal, selection } = table;
-  const tappable = tappableKeys(view, legal, selection);
-  const button = mainButton(view, legal, selection);
+  // Während Karten fliegen, ist nichts antippbar und der Knopf ausgeblendet.
+  const tappable = table.busy ? new Set<string>() : tappableKeys(view, legal, selection);
+  const button = table.busy ? null : mainButton(view, legal, selection);
   const positions = seatPositions(session.names.length - 1);
   const canKnock = legal.some((a) => a.type === 'knock');
   return (
@@ -51,13 +53,14 @@ export function RoundTable({
               position={position}
               tappable={tappable}
               changed={table.changed}
+              landing={table.landing}
               reveal={table.reveal}
               onTap={table.tap}
             />
           );
         })}
         <div className="center">
-          <Piles view={view} tappable={tappable} onTap={table.tap} />
+          <Piles view={view} tappable={tappable} landing={table.landing} onTap={table.tap} />
         </div>
       </div>
       <div className="status" aria-live="polite">
@@ -69,6 +72,7 @@ export function RoundTable({
         selection={selection}
         tappable={tappable}
         changed={table.changed}
+        landing={table.landing}
         reveal={table.reveal}
         onTap={table.tap}
       />
@@ -84,7 +88,8 @@ export function RoundTable({
           </button>
         ) : null}
       </div>
-      {table.score !== null ? (
+      <FlightLayer flights={table.flights} />
+      {table.score !== null && !table.busy ? (
         <RoundEnd
           session={session}
           score={table.score}

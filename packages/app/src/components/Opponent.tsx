@@ -11,6 +11,8 @@ interface OpponentProps {
   readonly position: SeatPosition;
   readonly tappable: ReadonlySet<string>;
   readonly changed: ReadonlySet<string>;
+  /** Anker, auf denen gerade eine Karte landet (siehe flights.ts). */
+  readonly landing: ReadonlySet<string>;
   readonly reveal: { readonly player: number; readonly slot: number } | null;
   readonly onTap: (tap: Tap) => void;
 }
@@ -23,6 +25,7 @@ export function Opponent({
   position,
   tappable,
   changed,
+  landing,
   reveal,
   onTap,
 }: OpponentProps) {
@@ -41,6 +44,8 @@ export function Opponent({
               label={`${name}, Karte ${String(slot + 1)}`}
               tappable={tappable.has(tapKey(tap))}
               changed={changed.has(`${String(player)}:${String(slot)}`)}
+              anchor={`slot:${String(player)}:${String(slot)}`}
+              landing={landing.has(`slot:${String(player)}:${String(slot)}`)}
               onTap={() => {
                 onTap(tap);
               }}

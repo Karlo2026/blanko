@@ -94,19 +94,16 @@ export function hintText(
   return `Tippe den Stapel zum Ziehen${match}${canKnock ? ' – oder klopfe' : ''}.`;
 }
 
-/** Plätze, die sich durch die Ereignisse verändert haben; sie bekommen eine kurze Bewegung. */
+/**
+ * Plätze, die kurz aufleuchten: wo jemand per 8 oder 9 eine Karte angeschaut hat. Bewegungen
+ * zeigen die fliegenden Karten (flights.ts), Anschauen dagegen bewegt nichts.
+ */
 export function changedSlots(events: readonly GameEvent[]): Set<string> {
   const keys = new Set<string>();
   for (const event of events) {
-    if (event.type === 'kept' || event.type === 'matched')
-      keys.add(`${String(event.player)}:${String(event.slot)}`);
-    if (event.type === 'matchFailed' && event.penaltySlot !== null) {
-      keys.add(`${String(event.player)}:${String(event.penaltySlot)}`);
-    }
-    if (event.type === 'swapped') {
-      keys.add(`${String(event.player)}:${String(event.slot)}`);
+    if (event.type === 'peekedOwn') keys.add(`${String(event.player)}:${String(event.slot)}`);
+    if (event.type === 'peekedOpponent')
       keys.add(`${String(event.target)}:${String(event.targetSlot)}`);
-    }
   }
   return keys;
 }

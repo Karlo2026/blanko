@@ -6,18 +6,19 @@ import { CardView, type CardFace } from './CardView.tsx';
 interface PilesProps {
   readonly view: PlayerView;
   readonly tappable: ReadonlySet<string>;
+  /** Anker, auf denen gerade eine Karte landet (siehe flights.ts). */
+  readonly landing: ReadonlySet<string>;
   readonly onTap: (tap: Tap) => void;
 }
 
 /** Nachzieh- und Ablagestapel nebeneinander; die gezogene Karte liegt offen über dem Stapel. */
-export function Piles({ view, tappable, onTap }: PilesProps) {
+export function Piles({ view, tappable, landing, onTap }: PilesProps) {
   const top = view.discardPile.at(-1);
   const discardFace: CardFace = top === undefined ? { kind: 'empty' } : { kind: 'face', card: top };
-  const someoneDrew = view.phase === 'drawn';
   const drawnFace: CardFace | null =
     view.drawnCard !== null
       ? { kind: 'face', card: view.drawnCard }
-      : someoneDrew
+      : view.phase === 'drawn'
         ? { kind: 'back' }
         : null;
   const draw: Tap = { kind: 'drawPile' };
@@ -30,7 +31,8 @@ export function Piles({ view, tappable, onTap }: PilesProps) {
             <CardView
               face={drawnFace}
               size="pile"
-              arriving
+              anchor="drawn"
+              landing={landing.has('drawn')}
               label={view.current === HUMAN ? 'Gezogene Karte' : 'Gezogene Karte des Gegners'}
             />
           )}
@@ -38,6 +40,7 @@ export function Piles({ view, tappable, onTap }: PilesProps) {
         <CardView
           face={view.drawPileSize > 0 ? { kind: 'back' } : { kind: 'empty' }}
           size="pile"
+          anchor="drawPile"
           label="Nachziehstapel"
           tappable={tappable.has(tapKey(draw))}
           onTap={() => {
@@ -48,10 +51,10 @@ export function Piles({ view, tappable, onTap }: PilesProps) {
       </div>
       <div className="pile">
         <CardView
-          key={top?.id ?? 'leer'}
           face={discardFace}
           size="pile"
-          arriving
+          anchor="discardPile"
+          landing={landing.has('discardPile')}
           label="Ablagestapel"
           tappable={tappable.has(tapKey(discard))}
           onTap={() => {

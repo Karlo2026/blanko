@@ -26,10 +26,13 @@ describe('Statuszeile', () => {
     );
   });
 
-  it('markiert getauschte Plätze beider Spieler', () => {
+  it('lässt angeschaute Plätze aufleuchten, Bewegungen nicht', () => {
+    expect(changedSlots([{ type: 'peekedOpponent', player: 2, target: 0, targetSlot: 1 }])).toEqual(
+      new Set(['0:1']),
+    );
     expect(
       changedSlots([{ type: 'swapped', player: 2, slot: 0, target: 0, targetSlot: 1 }]),
-    ).toEqual(new Set(['2:0', '0:1']));
+    ).toEqual(new Set());
   });
 });
 

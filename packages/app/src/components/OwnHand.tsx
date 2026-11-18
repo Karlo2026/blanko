@@ -9,6 +9,8 @@ interface OwnHandProps {
   readonly selection: Selection;
   readonly tappable: ReadonlySet<string>;
   readonly changed: ReadonlySet<string>;
+  /** Anker, auf denen gerade eine Karte landet (siehe flights.ts). */
+  readonly landing: ReadonlySet<string>;
   readonly reveal: { readonly player: number; readonly slot: number } | null;
   readonly onTap: (tap: Tap) => void;
 }
@@ -18,7 +20,15 @@ function isSelected(selection: Selection, slot: number): boolean {
 }
 
 /** Die eigenen Karten groß im 2×2-Quadrat, Strafkarten in weiteren Reihen darunter. */
-export function OwnHand({ view, selection, tappable, changed, reveal, onTap }: OwnHandProps) {
+export function OwnHand({
+  view,
+  selection,
+  tappable,
+  changed,
+  landing,
+  reveal,
+  onTap,
+}: OwnHandProps) {
   const hand = view.hands[HUMAN] ?? [];
   return (
     <div className="hand own">
@@ -33,6 +43,8 @@ export function OwnHand({ view, selection, tappable, changed, reveal, onTap }: O
             tappable={tappable.has(tapKey(tap))}
             selected={isSelected(selection, slot)}
             changed={changed.has(`${String(HUMAN)}:${String(slot)}`)}
+            anchor={`slot:${String(HUMAN)}:${String(slot)}`}
+            landing={landing.has(`slot:${String(HUMAN)}:${String(slot)}`)}
             onTap={() => {
               onTap(tap);
             }}

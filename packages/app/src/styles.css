@@ -292,10 +292,17 @@ button {
   transform: translateY(-14px);
 }
 .card.changed {
-  animation: card-arrive 320ms ease-out;
+  animation: card-arrive 1400ms ease-in-out;
 }
-.card.arriving {
-  animation: card-draw 260ms ease-out;
+.card.landing {
+  visibility: hidden;
+}
+/* Fliegende Karten liegen über allem und fangen keine Tipps ab. */
+.flight {
+  position: fixed;
+  z-index: 20;
+  pointer-events: none;
+  transform-origin: top left;
 }
 /* Kleine Karten brauchen eine größere unsichtbare Fläche zum Antippen (mindestens 44 × 44 pt). */
 .card.size-mini.tappable::after {
@@ -303,22 +310,21 @@ button {
   position: absolute;
   inset: -8px -10px;
 }
+/* Aufleuchten eines Platzes, auf den gerade jemand per 8 oder 9 geschaut hat. */
 @keyframes card-arrive {
-  from {
-    transform: scale(0.85);
-    opacity: 0.4;
+  0%,
+  100% {
+    outline: 0 solid transparent;
   }
-}
-@keyframes card-draw {
-  from {
-    transform: translateY(24px);
-    opacity: 0;
+  30%,
+  70% {
+    outline: 4px solid var(--knock);
+    outline-offset: 3px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .card,
-  .card.changed,
-  .card.arriving {
+  .card.changed {
     animation: none;
     transition: none;
   }

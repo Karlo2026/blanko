@@ -1,4 +1,5 @@
 import type { Card } from '@blanko/engine';
+import type React from 'react';
 import { isRed, rankLabel, SUIT_SYMBOLS } from '../session/card-names.ts';
 
 export type CardFace =
@@ -12,7 +13,12 @@ interface CardViewProps {
   readonly tappable?: boolean;
   readonly selected?: boolean;
   readonly changed?: boolean;
-  readonly arriving?: boolean;
+  /** Stelle am Tisch, von der Karten abfliegen oder auf der sie landen (siehe flights.ts). */
+  readonly anchor?: string;
+  /** Gerade landet hier eine fliegende Karte; bis dahin bleibt der Platz unsichtbar. */
+  readonly landing?: boolean;
+  /** Feste Breite in Pixeln statt der Größenklasse, für fliegende Karten. */
+  readonly width?: number;
   readonly label: string;
   readonly onTap?: () => void;
 }
@@ -30,7 +36,9 @@ export function CardView({
   tappable = false,
   selected = false,
   changed = false,
-  arriving = false,
+  anchor,
+  landing = false,
+  width,
   label,
   onTap,
 }: CardViewProps) {
@@ -42,7 +50,7 @@ export function CardView({
     tappable ? 'tappable' : '',
     selected ? 'selected' : '',
     changed ? 'changed' : '',
-    arriving ? 'arriving' : '',
+    landing ? 'landing' : '',
   ]
     .filter((c) => c !== '')
     .join(' ');
@@ -55,15 +63,30 @@ export function CardView({
     ) : face.kind === 'face' ? (
       <span className="rank">{rankLabel(face.card.rank)}</span>
     ) : null;
+  const style =
+    width === undefined ? undefined : ({ '--w': `${String(width)}px` } as React.CSSProperties);
   if (!tappable) {
     return (
-      <div className={classes} aria-label={cardLabel(face, label)} role="img">
+      <div
+        className={classes}
+        aria-label={cardLabel(face, label)}
+        role="img"
+        data-anchor={anchor}
+        style={style}
+      >
         {content}
       </div>
     );
   }
   return (
-    <button type="button" className={classes} aria-label={cardLabel(face, label)} onClick={onTap}>
+    <button
+      type="button"
+      className={classes}
+      aria-label={cardLabel(face, label)}
+      data-anchor={anchor}
+      style={style}
+      onClick={onTap}
+    >
       {content}
     </button>
   );

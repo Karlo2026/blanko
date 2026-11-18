@@ -11,13 +11,15 @@ import {
   type Rng,
 } from '@blanko/engine';
 import { useEffect, useRef, useState } from 'react';
+import { measureAnchor, type Flight } from '../components/FlightLayer.tsx';
 import { BotClient } from './bot-client.ts';
+import { anchorKey, flightDuration, flightsFor } from './flights.ts';
 import { NO_SELECTION, resolveTap, type Selection, type Tap } from './interaction.ts';
 import { HUMAN, type Session } from './session.ts';
 import { changedSlots, moveText, statusText } from './texts.ts';
 
-/** Sichtbare Pause pro Bot-Zug, damit man die Züge verfolgen kann. */
-const BOT_PAUSE_MS = 750;
+/** Sichtbare Pause pro Bot-Zug, damit man Züge und Statuszeile verfolgen kann. */
+const BOT_PAUSE_MS = 1200;
 /** So lange bleibt eine per 8 oder 9 angeschaute Karte offen. */
 const REVEAL_MS = 2200;
 
@@ -31,6 +33,8 @@ interface TableState {
   /** Per 8 oder 9 angeschaute Karte, die gerade offen gezeigt wird. */
   readonly reveal: { readonly player: number; readonly slot: number } | null;
   readonly score: RoundScore | null;
+  /** Karten, die gerade fliegen; solange wartet der Tisch. */
+  readonly flights: readonly Flight[];
 }
 
 export interface Table {
@@ -41,10 +45,18 @@ export interface Table {
   readonly changed: ReadonlySet<string>;
   readonly reveal: TableState['reveal'];
   readonly score: RoundScore | null;
+  readonly flights: readonly Flight[];
+  /** Anker, auf denen gerade eine Karte landet; dort bleibt der Platz bis zur Landung leer. */
+  readonly landing: ReadonlySet<string>;
+  /** Solange Karten fliegen, reagiert nichts auf Tipps. */
+  readonly busy: boolean;
   readonly tap: (tap: Tap) => void;
   readonly knock: () => void;
   readonly cancel: () => void;
 }
+
+const prefersReducedMotion = (): boolean =>
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function revealOf(action: Action): TableState['reveal'] {
   if (action.type === 'peekOwn') return { player: HUMAN, slot: action.slot };
@@ -70,10 +82,12 @@ export function useTable(
     changed: new Set(),
     reveal: null,
     score: null,
+    flights: [],
   };
   const [table, setTable] = useState<TableState>(initial);
   const tableRef = useRef(table);
   const clientRef = useRef<BotClient | null>(null);
+  const nextFlightId = useRef(1);
   const onScoredRef = useRef(onScored);
   onScoredRef.current = onScored;
 
@@ -95,6 +109,24 @@ export function useTable(
     const score = state.phase.kind === 'roundOver' ? scoreRound(state, rng) : null;
     const reveal = current.game.current === HUMAN ? revealOf(action) : null;
     const move = moveText(events, session.names);
+    // Startpositionen jetzt messen, solange noch der alte Zustand gezeichnet ist.
+    const plans = prefersReducedMotion()
+      ? []
+      : flightsFor(events, getPlayerView(current.game, HUMAN), getPlayerView(state, HUMAN));
+    const flights = plans.flatMap((plan): Flight[] => {
+      const from = measureAnchor(anchorKey(plan.from));
+      return from === null
+        ? []
+        : [
+            {
+              id: nextFlightId.current++,
+              from,
+              toKey: anchorKey(plan.to),
+              face: plan.face,
+              delayMs: plan.delayMs,
+            },
+          ];
+    });
     commit({
       game: state,
       memories,
@@ -103,6 +135,7 @@ export function useTable(
       changed: changedSlots(events),
       reveal,
       score,
+      flights,
     });
     if (score !== null) onScoredRef.current(score);
   };
@@ -117,8 +150,8 @@ export function useTable(
 
   // Bot-Züge: nach einer kurzen Pause rechnet der Worker, dann wird der Zug ausgeführt.
   useEffect(() => {
-    const { game, reveal, memories } = table;
-    if (game.phase.kind === 'roundOver' || game.current === HUMAN) return;
+    const { game, reveal, memories, flights } = table;
+    if (game.phase.kind === 'roundOver' || game.current === HUMAN || flights.length > 0) return;
     let cancelled = false;
     const timer = setTimeout(
       () => {
@@ -138,6 +171,20 @@ export function useTable(
     };
   }, [table]);
 
+  // Nach der Landung aller Karten geht es weiter.
+  useEffect(() => {
+    if (table.flights.length === 0) return;
+    const timer = setTimeout(
+      () => {
+        commit({ ...tableRef.current, flights: [] });
+      },
+      flightDuration(table.flights.map((f) => ({ delayMs: f.delayMs }))),
+    );
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [table.flights]);
+
   // Eine angeschaute Karte schließt sich nach kurzer Zeit wieder, auch wenn der Mensch am Zug bleibt.
   useEffect(() => {
     if (table.reveal === null) return;
@@ -149,6 +196,7 @@ export function useTable(
     };
   }, [table.reveal]);
 
+  const busy = table.flights.length > 0;
   const view = getPlayerView(table.game, HUMAN);
   const legal = table.game.current === HUMAN ? legalActions(table.game) : [];
   return {
@@ -159,14 +207,18 @@ export function useTable(
     changed: table.changed,
     reveal: table.reveal,
     score: table.score,
+    flights: table.flights,
+    landing: new Set(table.flights.map((f) => f.toKey)),
+    busy,
     tap(tap) {
+      if (busy) return;
       const result = resolveTap(view, legal, table.selection, tap);
       if (result === null) return;
       if (result.action === null) commit({ ...tableRef.current, selection: result.selection });
       else perform(result.action, result.selection);
     },
     knock() {
-      if (legal.some((a) => a.type === 'knock')) perform({ type: 'knock' }, NO_SELECTION);
+      if (!busy && legal.some((a) => a.type === 'knock')) perform({ type: 'knock' }, NO_SELECTION);
     },
     cancel() {
       commit({ ...tableRef.current, selection: NO_SELECTION });
