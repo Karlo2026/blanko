@@ -10,7 +10,9 @@ export interface Fitness {
 }
 
 /**
- * Ein Herausforderer gegen lauter Champions, gleich verteilt über 2 bis 6 Spieler.
+ * Ein Herausforderer gegen lauter Champions, gleich verteilt über 2 bis 6 Spieler und über alle
+ * Sitze. Die Sitzrotation macht die Messung robust gegen Sitzeffekte; ein solcher Effekt (Bots
+ * zielten bei Gleichstand immer auf Spieler 0) hatte frühere Messungen verzerrt.
  * Bei gleicher Stärke ist der Erwartungswert 0. Gleicher Seed heißt gleiche Austeilungen,
  * deshalb lassen sich Kandidaten einer Generation fair vergleichen.
  */

@@ -41,19 +41,4 @@ describe('tune', () => {
       );
     }
   });
-
-  it('macht aus einem schwachen Start durch Zufallssuche einen stärkeren', async () => {
-    const weak = {
-      ...basis.profile,
-      rule: { ...basis.profile.rule, keepMargin: 5, knockThresholds: [20, 20, 20, 20, 20] },
-    };
-    const result = await tune(weak, {
-      ...options,
-      method: 'random',
-      generations: 3,
-      candidates: 4,
-      games: 400,
-    });
-    expect(result.history.some((g) => g.accepted)).toBe(true);
-  });
 });

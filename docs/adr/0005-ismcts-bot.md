@@ -1,6 +1,6 @@
 # ADR 0005: IsmctsBot
 
-**Status:** angenommen (Phase 5, Zwischenstand)
+**Status:** angenommen (Phase 5, Zwischenstand; gleich stark wie der getunte RuleBot)
 
 ## Entscheidungen
 
@@ -26,4 +26,5 @@
 
 ## Messwerte
 
-Siehe [Labor-Bericht](../labor/2026-11-18-ismcts.md).
+Siehe [Labor-Bericht](../labor/2026-11-18-ismcts.md) und den Nachtrag im
+[Tuning-Bericht](../labor/2026-11-18-tune.md).

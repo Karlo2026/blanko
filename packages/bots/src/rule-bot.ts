@@ -1,6 +1,11 @@
 import { MIN_PLAYERS, type Action, type PlayerView, type Rng, type SlotView } from '@blanko/engine';
 import { pickRandom, type Bot } from './bot.ts';
-import { estimateHand, expectedUnknownValue, rankProbability } from './estimate.ts';
+import {
+  estimateHand,
+  expectedUnknownValue,
+  rankProbability,
+  soleLowestProbability,
+} from './estimate.ts';
 
 /** Faustregeln des RuleBots. Alle Werte in Handpunkten, sofern nicht anders angegeben. */
 export interface RuleParams {
@@ -10,6 +15,15 @@ export interface RuleParams {
   readonly knockThresholds: readonly number[];
   /** Geforderter Vorsprung vor dem geschätzt besten Gegner, bevor geklopft wird. */
   readonly knockLead: number;
+  /** Um so viele Punkte steigt die Klopf-Grenze pro vollständiger Tischrunde. */
+  readonly knockProgress: number;
+  /**
+   * Zusätzlich klopfen, sobald die geschätzte Wahrscheinlichkeit, allein die niedrigste Hand zu
+   * haben, mindestens so hoch ist; über 1 heißt nie.
+   */
+  readonly knockWinProbability: number;
+  /** Wie stark verdeckte Gegnerkarten bei dieser Schätzung als niedrig angenommen werden (0 = gleichverteilt). */
+  readonly opponentLowBias: number;
   /** Wie viel ein Blick per 8 auf eine eigene unbekannte Karte wert ist. */
   readonly peekOwnValue: number;
   /** Wie viel ein Blick per 9 auf eine unbekannte Gegnerkarte wert ist. */
@@ -73,17 +87,44 @@ function scoreDrawnAction(s: Situation, action: Action, params: RuleParams): num
   }
 }
 
-function chooseAfterDraw(s: Situation, legal: readonly Action[], params: RuleParams): Action {
-  let best: Action = { type: 'discardDrawn' };
+/**
+ * Bei gleich großem Nutzen trifft eine 9 oder 10 lieber den Gegner, der am besten dasteht: Ihm
+ * eine hohe Karte unterzuschieben oder in die Karten zu schauen, bringt am meisten. Das Gewicht ist
+ * so klein, dass es nur zwischen sonst gleich guten Zielen entscheidet.
+ */
+const LEADER_PREFERENCE = 1e-3;
+
+function leaderBonus(s: Situation, action: Action): number {
+  if (action.type !== 'peekOpponent' && action.type !== 'blindSwap') return 0;
+  const target = s.view.hands[action.target] ?? [];
+  return -LEADER_PREFERENCE * estimateHand(target, s.unknownValue);
+}
+
+/**
+ * Bestbewertete Aktion; echte Gleichstände entscheidet der Zufall. Vorher gewann die erste in der
+ * Liste, und weil die Liste nach Spielernummer sortiert ist, traf jeder 10-Tausch bei verdeckten
+ * Karten Spieler 0 – im Labor kostete das Sitz 0 bei 6 Spielern 0,19 Platzierungspunkte.
+ */
+function chooseAfterDraw(
+  s: Situation,
+  legal: readonly Action[],
+  params: RuleParams,
+  rng: Rng,
+): Action {
+  let best: Action[] = [{ type: 'discardDrawn' }];
   let bestScore = 0;
   for (const action of legal) {
-    const score = scoreDrawnAction(s, action, params);
-    if (score !== null && score > bestScore) {
-      best = action;
+    const raw = scoreDrawnAction(s, action, params);
+    if (raw === null || action.type === 'discardDrawn') continue;
+    const score = raw + leaderBonus(s, action);
+    if (score > bestScore) {
+      best = [action];
       bestScore = score;
+    } else if (score === bestScore) {
+      best.push(action);
     }
   }
-  return best;
+  return pickRandom(best, rng);
 }
 
 /** Eine bekannte passende Karte wird immer abgelegt, eine unbekannte nur ab der Verdachtsgrenze. */
@@ -109,16 +150,33 @@ function bestOpponentEstimate(s: Situation): number {
   return Math.min(...estimates);
 }
 
-function shouldKnock(s: Situation, params: RuleParams): boolean {
-  const threshold = params.knockThresholds[s.view.playerCount - MIN_PLAYERS] ?? -Infinity;
-  return s.ownEstimate <= threshold && s.ownEstimate + params.knockLead <= bestOpponentEstimate(s);
+/** Stichproben für die Gewinnwahrscheinlichkeit: genug für ±0,1, billig genug für das Labor. */
+const KNOCK_SAMPLES = 32;
+
+function shouldKnock(s: Situation, params: RuleParams, rng: Rng): boolean {
+  const base = params.knockThresholds[s.view.playerCount - MIN_PLAYERS] ?? -Infinity;
+  const tableRounds = Math.floor(s.view.turnCount / s.view.playerCount);
+  const threshold = base + params.knockProgress * tableRounds;
+  if (s.ownEstimate <= threshold && s.ownEstimate + params.knockLead <= bestOpponentEstimate(s)) {
+    return true;
+  }
+  return (
+    params.knockWinProbability <= 1 &&
+    soleLowestProbability(s.view, KNOCK_SAMPLES, params.opponentLowBias, rng) >=
+      params.knockWinProbability
+  );
 }
 
-function chooseAtTurnStart(s: Situation, legal: readonly Action[], params: RuleParams): Action {
+function chooseAtTurnStart(
+  s: Situation,
+  legal: readonly Action[],
+  params: RuleParams,
+  rng: Rng,
+): Action {
   const match = chooseMatch(s, legal, params);
   if (match !== null) return match;
   const knock = legal.find((a) => a.type === 'knock');
-  if (knock !== undefined && shouldKnock(s, params)) return knock;
+  if (knock !== undefined && shouldKnock(s, params, rng)) return knock;
   return legal.find((a) => a.type === 'draw') ?? knock ?? firstLegal(legal);
 }
 
@@ -142,8 +200,8 @@ export function createRuleBot(params: RuleParams, mistakeRate: number): Bot {
       }
       const situation = situationOf(view);
       return view.phase === 'drawn'
-        ? chooseAfterDraw(situation, legal, params)
-        : chooseAtTurnStart(situation, legal, params);
+        ? chooseAfterDraw(situation, legal, params, rng)
+        : chooseAtTurnStart(situation, legal, params, rng);
     },
   };
 }

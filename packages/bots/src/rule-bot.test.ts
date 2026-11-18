@@ -136,3 +136,78 @@ describe('RuleBot mit Fehlerquote', () => {
     }
   });
 });
+
+describe('RuleBot: weitere Klopf-Regeln', () => {
+  const legal: Action[] = [{ type: 'draw' }, { type: 'knock' }];
+  // Hand mit 10 Punkten: über der strengen Grenze (5), also Klopfen nur über die neuen Regeln.
+  const view = (turnCount: number) =>
+    makeView({
+      hands: [[known(4), known(5), known(1), { kind: 'empty' }], opponentHidden],
+      turnCount,
+    });
+  const strict = { ...BASE_PARAMS, knockThresholds: [5, 5, 5, 5, 5], knockLead: 0 };
+
+  it('hebt die Klopf-Grenze mit dem Rundenfortschritt an', () => {
+    const progressing = createRuleBot({ ...strict, knockProgress: 1 }, 0);
+    expect(progressing.chooseAction(view(0), legal, rng)).toEqual({ type: 'draw' });
+    // 10 Züge bei 2 Spielern = 5 Tischrunden, Grenze 5 + 5 = 10.
+    expect(progressing.chooseAction(view(10), legal, rng)).toEqual({ type: 'knock' });
+  });
+
+  it('klopft, sobald die geschätzte Gewinnwahrscheinlichkeit hoch genug ist', () => {
+    const confident = createRuleBot({ ...strict, knockWinProbability: 0.5 }, 0);
+    expect(confident.chooseAction(view(0), legal, rng)).toEqual({ type: 'knock' });
+    expect(createRuleBot(strict, 0).chooseAction(view(0), legal, rng)).toEqual({ type: 'draw' });
+  });
+});
+
+describe('RuleBot: Zielwahl bei Gleichstand', () => {
+  const swapsFrom = (slot: number, targets: number[]): Action[] =>
+    targets.flatMap((target) =>
+      [0, 1, 2, 3].map((targetSlot): Action => ({ type: 'blindSwap', slot, target, targetSlot })),
+    );
+
+  it('schiebt eine hohe Karte dem Gegner zu, der am besten dasteht', () => {
+    const view = makeView({
+      phase: 'drawn',
+      drawnCard: cardFor(10),
+      hands: [
+        [known(2), known(13), known(3), known(4)],
+        [hidden, hidden, hidden, hidden],
+        [hidden, hidden, known(1, 'hearts'), known(2, 'hearts')],
+        [hidden, hidden, hidden, hidden],
+      ],
+    });
+    const choice = bot.chooseAction(
+      view,
+      [{ type: 'discardDrawn' }, ...swapsFrom(1, [1, 2, 3])],
+      rng,
+    );
+    expect(choice).toMatchObject({ type: 'blindSwap', slot: 1, target: 2 });
+  });
+
+  it('verteilt gleichwertige Ziele zufällig statt immer auf Spieler 0', () => {
+    const view = makeView({
+      viewer: 2,
+      current: 2,
+      phase: 'drawn',
+      drawnCard: cardFor(10),
+      hands: [
+        [hidden, hidden, hidden, hidden],
+        [hidden, hidden, hidden, hidden],
+        [known(2), known(13), known(3), known(4)],
+      ],
+    });
+    const targets = new Set(
+      Array.from({ length: 40 }, () => {
+        const choice = bot.chooseAction(
+          view,
+          [{ type: 'discardDrawn' }, ...swapsFrom(1, [0, 1])],
+          rng,
+        );
+        return choice.type === 'blindSwap' ? choice.target : -1;
+      }),
+    );
+    expect(targets).toEqual(new Set([0, 1]));
+  });
+});
