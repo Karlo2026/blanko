@@ -10,7 +10,9 @@ Beide nutzen dieselbe Engine und dieselben Bots.
 
 ## Stand
 
-- Phase 1 bis 6 sind abgeschlossen. Der IsmctsBot ist gleich stark wie der getunte RuleBot, aber
+- Phase 1 bis 7 sind abgeschlossen; die iPhone-App ist spielbar und offline nutzbar
+  ([ADR 0006](docs/adr/0006-app.md)).
+- Phase 1 bis 6 im Einzelnen: Der IsmctsBot ist gleich stark wie der getunte RuleBot, aber
   nicht deutlich stärker ([ADR 0005](docs/adr/0005-ismcts-bot.md)).
 - Die vier Stufen und die Leiter für den dynamischen Modus liegen vermessen in
   `packages/app/public/profiles.json`; dazu gibt es einen ersten
@@ -89,6 +91,17 @@ Nur für die App (`-w @blanko/app`):
 | `npm run dev -w @blanko/app`     | Entwicklungsserver mit Vite   |
 | `npm run build -w @blanko/app`   | statischer Build nach `dist/` |
 | `npm run preview -w @blanko/app` | Build lokal ansehen           |
+
+## App aufs iPhone
+
+1. Bauen: `npm run build -w @blanko/app`. Das Ergebnis liegt in `packages/app/dist/`.
+2. Den Ordner `dist/` als statische Seite hosten, etwa über GitHub Pages. Alle Pfade sind relativ,
+   ein Unterpfad wie `/blanko/` funktioniert also.
+3. Auf dem iPhone die Seite in Safari öffnen, Teilen → „Zum Home-Bildschirm“.
+4. Einmal öffnen, solange Netz da ist; danach läuft die App offline.
+
+Zum Ausprobieren am Mac: `npm run dev -w @blanko/app` (Entwicklung) oder
+`npm run build -w @blanko/app && npm run preview -w @blanko/app` (mit Service Worker).
 
 ## Aufbau
 

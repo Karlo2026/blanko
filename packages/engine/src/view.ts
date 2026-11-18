@@ -29,14 +29,18 @@ export interface PlayerView {
   readonly canStillPeek: boolean;
 }
 
-/** Genau das, was dieser Spieler wissen darf. Bots und Oberfläche sehen nur diese Sicht. */
+/**
+ * Genau das, was dieser Spieler wissen darf. Bots und Oberfläche sehen nur diese Sicht.
+ * Am Rundenende decken alle auf; dann ist jede Karte bekannt.
+ */
 export function getPlayerView(state: GameState, viewer: PlayerId): PlayerView {
+  const revealed = state.phase.kind === 'roundOver';
   const hands = state.hands.map((hand) =>
     hand.map((card): SlotView => {
       if (card === null) {
         return { kind: 'empty' };
       }
-      return knows(state.knowledge, card, viewer)
+      return revealed || knows(state.knowledge, card, viewer)
         ? { kind: 'known', card: cardOf(card) }
         : { kind: 'hidden' };
     }),

@@ -28,6 +28,19 @@ describe('getPlayerView', () => {
     expect(getPlayerView(drawn, 1).canStillPeek).toBe(true);
   });
 
+  it('deckt am Rundenende alle Karten auf', () => {
+    const over = play(state, [
+      { type: 'knock' },
+      { type: 'draw' },
+      { type: 'discardDrawn' },
+      { type: 'draw' },
+      { type: 'discardDrawn' },
+    ]).state;
+    expect(over.phase.kind).toBe('roundOver');
+    const view = getPlayerView(over, 1);
+    expect(view.hands.flat().every((slot) => slot.kind === 'known')).toBe(true);
+  });
+
   it('zeigt Stapelgröße und den offenen Ablagestapel', () => {
     const view = getPlayerView(state, 1);
     expect(view.drawPileSize).toBe(state.drawPile.length);
