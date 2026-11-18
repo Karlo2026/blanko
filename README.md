@@ -11,7 +11,8 @@ Beide nutzen dieselbe Engine und dieselben Bots.
 ## Stand
 
 - Phase 1 bis 4 (Grundgerüst, Engine, Bots, Labor Teil 1) sind abgeschlossen; Phase 5 (IsmctsBot)
-  steht als Zwischenstand ([ADR 0005](docs/adr/0005-ismcts-bot.md)).
+  steht als Zwischenstand ([ADR 0005](docs/adr/0005-ismcts-bot.md)). `tune` aus Phase 6 ist
+  vorgezogen ([Ergebnis](docs/labor/2026-11-18-tune.md)).
 - Die Engine setzt alle Regeln, die Wertung und die Sicht pro Spieler um, siehe
   [Regeln](docs/regeln.md).
 - `bots` enthält Bot-Schnittstelle, Gedächtnis mit Vergessen, RuleBot, Zufalls-Bot,
@@ -73,6 +74,7 @@ Labor (Ergebnisse als JSON, CSV und Markdown in `packages/lab/results/`):
 | ------------------------------------------------------------- | ------------------------------------------------------------- |
 | `npm run lab -- simulate --seats basis,basis,zufall,zufall`   | feste Besetzung, Statistik je Profil                          |
 | `npm run lab -- tournament --profiles basis,anfaenger,zufall` | wechselnde Besetzung, Elo je Profil                           |
+| `npm run lab -- tune --profile basis --save`                  | sucht bessere Parameter per Selbstspiel                       |
 | `npm run lab -- --help`                                       | alle Optionen (`--games`, `--seed`, `--players`, `--workers`) |
 
 Profile liegen als JSON in `packages/lab/profiles/`, `zufall` ist der eingebaute Zufalls-Bot.

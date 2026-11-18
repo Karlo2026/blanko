@@ -4,20 +4,42 @@ import { runChunk, type ChunkTask, type RoundRecord } from './chunk.ts';
 
 export const DEFAULT_WORKERS = availableParallelism();
 
+/**
+ * Worker bleiben zwischen Aufrufen bestehen, weil jeder Start TypeScript neu lädt. Bei `tune` mit
+ * hunderten kurzen Messungen machte das sonst den Großteil der Laufzeit aus.
+ */
+let pool: Worker[] = [];
+
+function workersFor(count: number): Worker[] {
+  while (pool.length < count) {
+    pool.push(new Worker(new URL('./worker.ts', import.meta.url)));
+  }
+  return pool.slice(0, count);
+}
+
+/** Beendet alle Worker; danach kann der Prozess sich beenden. */
+export async function closeWorkers(): Promise<void> {
+  const closing = pool;
+  pool = [];
+  await Promise.all(closing.map((worker) => worker.terminate()));
+}
+
 /** Ein Worker arbeitet Pakete der Reihe nach ab, solange die gemeinsame Warteschlange etwas hat. */
 function drainQueue(
+  worker: Worker,
   next: () => number | null,
   tasks: readonly ChunkTask[],
   results: RoundRecord[][],
 ): Promise<void> {
-  const worker = new Worker(new URL('./worker.ts', import.meta.url));
   return new Promise((resolve, reject) => {
+    const onError = (error: unknown): void => {
+      reject(error instanceof Error ? error : new Error(String(error)));
+    };
     const sendNext = (): void => {
       const index = next();
       if (index === null) {
-        void worker.terminate().then(() => {
-          resolve();
-        });
+        worker.off('error', onError);
+        resolve();
         return;
       }
       worker.once('message', (records: RoundRecord[]) => {
@@ -26,7 +48,7 @@ function drainQueue(
       });
       worker.postMessage(tasks[index]);
     };
-    worker.once('error', reject);
+    worker.on('error', onError);
     sendNext();
   });
 }
@@ -45,9 +67,8 @@ export async function runChunks(
   const results: RoundRecord[][] = [];
   let cursor = 0;
   const next = (): number | null => (cursor < tasks.length ? cursor++ : null);
-  const pool = Array.from({ length: Math.min(workers, tasks.length) }, () =>
-    drainQueue(next, tasks, results),
+  await Promise.all(
+    workersFor(Math.min(workers, tasks.length)).map((w) => drainQueue(w, next, tasks, results)),
   );
-  await Promise.all(pool);
   return results.flat();
 }

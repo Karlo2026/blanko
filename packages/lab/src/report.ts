@@ -67,13 +67,25 @@ export function toMarkdown(result: RunResult): string {
   ].join('\n');
 }
 
-/** Schreibt JSON, CSV und Markdown-Bericht in einen eigenen Ordner und liefert dessen Pfad. */
-export function writeResult(result: RunResult, seed: number): string {
+/** Schreibt die Dateien eines Laufs in einen eigenen Ordner und liefert dessen Pfad. */
+export function writeRunFiles(
+  command: string,
+  seed: number,
+  files: Readonly<Record<string, string>>,
+): string {
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
-  const dir = join(RESULTS_DIR, `${result.command}-seed${String(seed)}-${stamp}`);
+  const dir = join(RESULTS_DIR, `${command}-seed${String(seed)}-${stamp}`);
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, 'result.json'), `${JSON.stringify(result, null, 2)}\n`);
-  writeFileSync(join(dir, 'summary.csv'), toCsv(result));
-  writeFileSync(join(dir, 'report.md'), toMarkdown(result));
+  for (const [name, content] of Object.entries(files)) {
+    writeFileSync(join(dir, name), content);
+  }
   return dir;
+}
+
+export function resultFiles(result: RunResult): Record<string, string> {
+  return {
+    'result.json': `${JSON.stringify(result, null, 2)}\n`,
+    'summary.csv': toCsv(result),
+    'report.md': toMarkdown(result),
+  };
 }

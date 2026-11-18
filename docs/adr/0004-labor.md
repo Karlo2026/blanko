@@ -22,3 +22,11 @@
 - **Ergebnisdateien** (`result.json`, `summary.csv`, `report.md`) enthalten keine Laufzeit,
   damit gleicher Seed byte-gleiche Dateien ergibt. Die Laufzeit steht nur in der Konsole.
 - **„zufall“** ist ein eingebauter Teilnehmer (Zufalls-Bot) als Nullpunkt der Skala.
+
+## Nachtrag: tune
+
+- **Champion gegen Herausforderer:** Kandidaten (zufällig oder als Mutation) spielen auf
+  denselben Seeds gegen den Champion, über 2 bis 6 Spieler gemittelt. Der Beste muss sich auf
+  frischen Seeds signifikant bestätigen (2 Standardfehler), sonst bleibt der Champion.
+- **Dauerhafter Worker-Pool:** Worker bleiben zwischen Messungen bestehen und werden am Ende des
+  Befehls beendet.
