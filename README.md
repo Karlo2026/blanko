@@ -10,10 +10,12 @@ Beide nutzen dieselbe Engine und dieselben Bots.
 
 ## Stand
 
-- Phase 1 (Grundgerüst) und Phase 2 (Engine) sind abgeschlossen.
+- Phase 1 (Grundgerüst), Phase 2 (Engine) und Phase 3 (Bots) sind abgeschlossen.
 - Die Engine setzt alle Regeln, die Wertung und die Sicht pro Spieler um, siehe
   [Regeln](docs/regeln.md).
-- `bots` und `lab` sind noch leer.
+- `bots` enthält Bot-Schnittstelle, Gedächtnis mit Vergessen, RuleBot, Zufalls-Bot,
+  Profilformat und den Runner `playRound` ([ADR 0003](docs/adr/0003-bots.md)).
+- `lab` ist noch leer.
 
 ## Engine in Kürze
 

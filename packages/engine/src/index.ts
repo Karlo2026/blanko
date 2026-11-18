@@ -1,6 +1,7 @@
 export type { Action, GameEvent } from './actions.ts';
 export { applyAction } from './apply.ts';
 export {
+  ALL_CARD_IDS,
   cardIdOf,
   cardOf,
   rankPoints,
