@@ -28,5 +28,23 @@ Nachhinein erreicht – nicht durch mehr Suche, sondern durch besseres Wissen ü
   behalten manchmal höhere Karten, etwa für ein Paar; gegen sie könnte ein kleineres `reading`
   besser sein.
 - Gelesen wird nur das Behalten. Weitere Signale (wer früh klopft, wer eine 8 nutzt) sind möglich.
-- Die App nutzt weiterhin den RuleBot als „Meister“: Der IsmctsBot braucht pro Zug Hunderte
-  Simulationen und wäre auf dem iPhone deutlich langsamer.
+- Die Annahme gilt im Labor gegen Bots; wie gut sie gegen Menschen trägt, ist nicht gemessen.
+
+## Nachtrag: Stufe „Großmeister“ in der App
+
+Der lesende IsmctsBot ist als fünfte Stufe über „Meister“ in der App (`grossmeister`, `reading` 1,
+100 Iterationen, höchstens 400 ms pro Entscheidung). Er wird im selben Export-Turnier wie die Leiter
+vermessen, gehört aber nicht zur Leiter des dynamischen Modus, weil er langsamer rechnet.
+
+| Stufe       | Elo  | Siegquote im Export-Turnier |
+| ----------- | ---- | --------------------------- |
+| Anfänger    | 1337 | 5,3 %                       |
+| Mittel      | 1426 | 14,5 %                      |
+| Stark       | 1534 | 28,0 %                      |
+| Meister     | 1645 | 41,8 %                      |
+| Großmeister | 1668 | 54,9 %                      |
+
+Im Browser auf dem Mac dauert ein Großmeister-Zug rund 0,8 bis 1 Sekunde (davon 0,75 s bewusste
+Pause). Auf dem iPhone begrenzt das Zeitbudget die Rechenzeit; erreicht er dort die 100 Iterationen
+nicht in 400 ms, spielt er etwas schwächer als gemessen. Der Labor-Lauf selbst bleibt reproduzierbar,
+weil auf dem Mac die Iterationsgrenze vor dem Zeitbudget greift.

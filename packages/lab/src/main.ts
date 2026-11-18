@@ -6,7 +6,7 @@ import { availableProfileIds, loadEntrant, saveProfile } from './profile-store.t
 import { resultFiles, toMarkdown, writeRunFiles } from './report.ts';
 import { analyze } from './analyze.ts';
 import { analysisFiles } from './analyze-report.ts';
-import { buildAppProfiles, writeAppProfiles } from './export.ts';
+import { buildAppProfiles, DEFAULT_LEVEL_IDS, writeAppProfiles } from './export.ts';
 import { ladderProfiles } from './ladder.ts';
 import { tune, type TuneMethod } from './tune.ts';
 import { tuneFiles } from './tune-report.ts';
@@ -22,12 +22,12 @@ Profile liegen in packages/lab/profiles; „zufall“ ist der eingebaute Zufalls
 Ohne --profiles spielt das Turnier mit allen vorhandenen Profilen.
   npm run lab -- ladder     --profile basis-getunt [--steps 10]
   npm run lab -- analyze    --profile basis-getunt [--games 6000] [--seed 1]
-  npm run lab -- export     [--levels leiter-01,leiter-04,leiter-07,leiter-10] [--players 4]
+  npm run lab -- export     [--levels leiter-01,leiter-04,leiter-07,leiter-10,grossmeister] [--players 4]
                             [--games 20000] [--seed 1] [--workers N]
 
 tune --save legt das Ergebnis als <profil>-getunt.json in packages/lab/profiles ab.
 ladder legt leiter-01 (schwächste) bis leiter-NN (Ausgangsprofil) in packages/lab/profiles ab.
-export vermisst alle leiter-* in einem Turnier und schreibt Stufen (Anfänger bis Meister) und
+export vermisst alle leiter-* und die übrigen Stufen in einem Turnier und schreibt Stufen (Anfänger bis Großmeister) und
 Leiter mit Wertung nach packages/app/public/profiles.json.`;
 
 const OPTIONS = {
@@ -38,7 +38,7 @@ const OPTIONS = {
   generations: { type: 'string', default: '20' },
   candidates: { type: 'string', default: '8' },
   steps: { type: 'string', default: '10' },
-  levels: { type: 'string', default: 'leiter-01,leiter-04,leiter-07,leiter-10' },
+  levels: { type: 'string', default: DEFAULT_LEVEL_IDS.join(',') },
   players: { type: 'string', default: '4' },
   games: { type: 'string' },
   seed: { type: 'string', default: '1' },
@@ -119,13 +119,14 @@ function runLadder(values: Values): CommandOutput {
 }
 
 async function runExport(values: Values): Promise<CommandOutput> {
-  const ladder = availableProfileIds()
-    .filter((id) => id.startsWith('leiter-'))
-    .map(loadEntrant);
+  const ladderIds = availableProfileIds().filter((id) => id.startsWith('leiter-'));
   const levelIds = list(textOf(values, 'levels') ?? '');
+  const ladder = ladderIds.map(loadEntrant);
+  const extras = levelIds.filter((id) => !ladderIds.includes(id)).map(loadEntrant);
   const players = positiveInt(textOf(values, 'players') ?? '4', 'players');
   const { profiles, result } = await buildAppProfiles(
     ladder,
+    extras,
     levelIds,
     players,
     runOptions(values, 20_000),

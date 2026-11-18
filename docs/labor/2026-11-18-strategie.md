@@ -81,7 +81,9 @@ schreibt sie nach `packages/app/public/profiles.json`:
 | Stark    | leiter-07 | 1556 |
 | Meister  | leiter-10 | 1675 |
 
-Die Stufen sind klar abgestuft (95 bis 120 Elo Abstand). Alle zehn Sprossen der Leiter steigen
+Die Stufen sind klar abgestuft (95 bis 120 Elo Abstand). Seit Phase 9 gibt es darüber den
+„Großmeister“ (IsmctsBot, der Gegner liest); mit ihm wurde neu exportiert, die Werte stehen in
+[ADR 0008](../adr/0008-gegner-lesen.md). Alle zehn Sprossen der Leiter steigen
 streng an und dienen dem dynamischen Modus (Phase 8).
 
 ### Was dabei aufgefallen ist

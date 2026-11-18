@@ -21,7 +21,7 @@
           "swapMargin": 1.73,
           "suspicionThreshold": 1.2
         },
-        "rating": 1346,
+        "rating": 1337,
         "type": "rule"
       }
     },
@@ -45,7 +45,7 @@
           "swapMargin": 1.73,
           "suspicionThreshold": 1.2
         },
-        "rating": 1439,
+        "rating": 1426,
         "type": "rule"
       }
     },
@@ -69,7 +69,7 @@
           "swapMargin": 1.73,
           "suspicionThreshold": 1.2
         },
-        "rating": 1556,
+        "rating": 1534,
         "type": "rule"
       }
     },
@@ -93,8 +93,35 @@
           "swapMargin": 1.73,
           "suspicionThreshold": 1.2
         },
-        "rating": 1675,
+        "rating": 1645,
         "type": "rule"
+      }
+    },
+    {
+      "level": "grossmeister",
+      "label": "Großmeister",
+      "profile": {
+        "id": "grossmeister",
+        "name": "Großmeister",
+        "forgetRate": 0,
+        "mistakeRate": 0,
+        "rule": {
+          "keepMargin": 0,
+          "knockThresholds": [7.54, 4.59, 3.95, 4.07, 5.95],
+          "knockLead": 3,
+          "knockProgress": 0,
+          "knockWinProbability": 1.1,
+          "opponentLowBias": 0,
+          "peekOwnValue": 2.07,
+          "peekOpponentValue": 0.48,
+          "swapMargin": 1.73,
+          "suspicionThreshold": 1.2
+        },
+        "rating": 1668,
+        "type": "ismcts",
+        "iterations": 100,
+        "timeBudgetMs": 400,
+        "reading": 1
       }
     }
   ],
@@ -116,7 +143,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1346,
+      "rating": 1337,
       "type": "rule"
     },
     {
@@ -136,7 +163,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1367,
+      "rating": 1359,
       "type": "rule"
     },
     {
@@ -156,7 +183,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1409,
+      "rating": 1390,
       "type": "rule"
     },
     {
@@ -176,7 +203,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1439,
+      "rating": 1426,
       "type": "rule"
     },
     {
@@ -196,7 +223,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1468,
+      "rating": 1448,
       "type": "rule"
     },
     {
@@ -216,7 +243,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1522,
+      "rating": 1497,
       "type": "rule"
     },
     {
@@ -236,7 +263,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1556,
+      "rating": 1534,
       "type": "rule"
     },
     {
@@ -256,7 +283,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1577,
+      "rating": 1568,
       "type": "rule"
     },
     {
@@ -276,7 +303,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1641,
+      "rating": 1628,
       "type": "rule"
     },
     {
@@ -296,7 +323,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1675,
+      "rating": 1645,
       "type": "rule"
     }
   ]

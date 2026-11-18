@@ -5,13 +5,25 @@ import { tournament, type RunOptions } from './commands.ts';
 import type { Entrant } from './entrant.ts';
 import type { RunResult } from './report.ts';
 
-/** Die vier festen Stufen der App, schwächste zuerst. */
+/**
+ * Die festen Stufen der App, schwächste zuerst: die vier aus dem Auftrag und darüber der
+ * Großmeister, ein IsmctsBot, der Gegner liest (Phase 9).
+ */
 const LEVELS = [
   { level: 'anfaenger', label: 'Anfänger' },
   { level: 'mittel', label: 'Mittel' },
   { level: 'stark', label: 'Stark' },
   { level: 'meister', label: 'Meister' },
+  { level: 'grossmeister', label: 'Großmeister' },
 ] as const;
+
+export const DEFAULT_LEVEL_IDS = [
+  'leiter-01',
+  'leiter-04',
+  'leiter-07',
+  'leiter-10',
+  'grossmeister',
+];
 
 /** Inhalt von profiles.json: feste Stufen und die Leiter für den dynamischen Modus, beide mit Wertung. */
 export interface AppProfiles {
@@ -27,12 +39,20 @@ export interface AppProfiles {
 
 const APP_PROFILES_FILE = join(import.meta.dirname, '..', '..', 'app', 'public', 'profiles.json');
 
+function profileOf(entrant: Entrant): BotProfile {
+  if (entrant.kind !== 'profile')
+    throw new Error(`${entrant.id} ist kein Profil und kann nicht exportiert werden`);
+  return entrant.profile;
+}
+
 /**
- * Vermisst alle Leiter-Profile in einem gemeinsamen Turnier und ordnet die Stufen zu.
- * Die Stufen sind Sprossen der Leiter, damit beide Wertungen auf derselben Skala liegen.
+ * Vermisst Leiter und zusätzliche Stufen-Profile in einem gemeinsamen Turnier, damit alle Wertungen
+ * auf derselben Skala liegen, und ordnet die Stufen zu. Zusätzliche Profile (etwa der langsame
+ * Großmeister) gehören nicht zur Leiter des dynamischen Modus.
  */
 export async function buildAppProfiles(
   ladder: readonly Entrant[],
+  extras: readonly Entrant[],
   levelIds: readonly string[],
   playersPerTable: number,
   options: RunOptions,
@@ -42,22 +62,21 @@ export async function buildAppProfiles(
       `Es braucht genau ${String(LEVELS.length)} Stufen, nicht ${String(levelIds.length)}`,
     );
   }
-  const rated = ladder.map((entrant) => {
-    if (entrant.kind !== 'profile')
-      throw new Error(`${entrant.id} ist kein Profil und kann nicht exportiert werden`);
-    return entrant.profile;
+  const result = await tournament([...ladder, ...extras], playersPerTable, options);
+  const rate = (profile: BotProfile): BotProfile => ({
+    ...profile,
+    rating: result.elo?.[profile.id] ?? null,
   });
-  const result = await tournament(ladder, playersPerTable, options);
-  const withRating = rated
-    .map((profile): BotProfile => ({ ...profile, rating: result.elo?.[profile.id] ?? null }))
-    .sort((a, b) => (a.rating ?? 0) - (b.rating ?? 0));
+  const byRating = (a: BotProfile, b: BotProfile): number => (a.rating ?? 0) - (b.rating ?? 0);
+  const ratedLadder = ladder.map(profileOf).map(rate).sort(byRating);
+  const allRated = [...ratedLadder, ...extras.map(profileOf).map(rate)];
   const levels = LEVELS.map((level, index) => {
-    const profile = withRating.find((p) => p.id === levelIds[index]);
+    const profile = allRated.find((p) => p.id === levelIds[index]);
     if (profile === undefined)
-      throw new Error(`Stufe ${level.label}: ${String(levelIds[index])} ist nicht in der Leiter`);
+      throw new Error(`Stufe ${level.label}: ${String(levelIds[index])} wurde nicht vermessen`);
     return { ...level, profile };
   });
-  return { profiles: { playersPerTable, levels, ladder: withRating }, result };
+  return { profiles: { playersPerTable, levels, ladder: ratedLadder }, result };
 }
 
 export function writeAppProfiles(profiles: AppProfiles): string {

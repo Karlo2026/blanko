@@ -96,11 +96,11 @@ export function nearestLevel(levels: readonly Level[], rating: number): Level | 
 }
 
 /**
- * Startwert: die Wertung der mittleren Stufe (bei vier Stufen „Mittel“). Die rechnerische Mitte der
- * Leiter läge näher an „Stark“ und wäre für Neulinge zu hoch.
+ * Startwert: die Wertung der Stufe „Mittel“. Die rechnerische Mitte der Leiter läge näher an „Stark“
+ * und wäre für Neulinge zu hoch.
  */
 export function initialRating(levels: readonly Level[]): PlayerRating {
-  const middle = levels[Math.floor((levels.length - 1) / 2)];
+  const middle = levels.find((l) => l.level === 'mittel') ?? levels[0];
   return { rating: middle?.profile.rating ?? 1500, rounds: 0 };
 }
 

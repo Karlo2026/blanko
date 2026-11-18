@@ -1,0 +1,23 @@
+{
+  "id": "grossmeister",
+  "name": "Großmeister",
+  "type": "ismcts",
+  "forgetRate": 0,
+  "mistakeRate": 0,
+  "rule": {
+    "keepMargin": 0,
+    "knockThresholds": [7.54, 4.59, 3.95, 4.07, 5.95],
+    "knockLead": 3,
+    "knockProgress": 0,
+    "knockWinProbability": 1.1,
+    "opponentLowBias": 0,
+    "peekOwnValue": 2.07,
+    "peekOpponentValue": 0.48,
+    "swapMargin": 1.73,
+    "suspicionThreshold": 1.2
+  },
+  "rating": null,
+  "iterations": 100,
+  "timeBudgetMs": 400,
+  "reading": 1
+}

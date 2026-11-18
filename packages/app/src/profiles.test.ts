@@ -11,10 +11,23 @@ const exported: unknown = JSON.parse(
 const profiles = parseAppProfiles(exported);
 
 describe('profiles.json aus dem Labor', () => {
-  it('enthält die vier Stufen mit aufsteigender Wertung', () => {
-    expect(profiles.levels.map((l) => l.label)).toEqual(['Anfänger', 'Mittel', 'Stark', 'Meister']);
+  it('enthält die fünf Stufen mit aufsteigender Wertung', () => {
+    expect(profiles.levels.map((l) => l.label)).toEqual([
+      'Anfänger',
+      'Mittel',
+      'Stark',
+      'Meister',
+      'Großmeister',
+    ]);
     const ratings = profiles.levels.map((l) => l.profile.rating ?? 0);
     expect(ratings).toEqual([...ratings].sort((a, b) => a - b));
+  });
+
+  it('führt den Großmeister als IsmctsBot mit Zeitbudget, nicht in der Leiter', () => {
+    const grandmaster = profiles.levels.at(-1)?.profile;
+    expect(grandmaster).toMatchObject({ type: 'ismcts', reading: 1 });
+    expect(grandmaster?.type === 'ismcts' ? grandmaster.timeBudgetMs : null).toBeGreaterThan(0);
+    expect(profiles.ladder.map((p) => p.id)).not.toContain(grandmaster?.id);
   });
 
   it('enthält eine nach Wertung sortierte Leiter', () => {

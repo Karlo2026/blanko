@@ -10,8 +10,8 @@ Beide nutzen dieselbe Engine und dieselben Bots.
 
 ## Stand
 
-- Alle 9 Phasen sind abgeschlossen. Phase 9 „Gegner lesen“ macht den IsmctsBot zum stärksten Bot
-  ([ADR 0008](docs/adr/0008-gegner-lesen.md)).
+- Alle 9 Phasen sind abgeschlossen. Phase 9 „Gegner lesen“ macht den IsmctsBot zum stärksten Bot;
+  in der App spielt er als fünfte Stufe „Großmeister“ ([ADR 0008](docs/adr/0008-gegner-lesen.md)).
 - Phase 1 bis 8: die iPhone-App ist spielbar und offline nutzbar
   ([ADR 0006](docs/adr/0006-app.md)), mit dynamischem Modus und Spielerwertung
   ([ADR 0007](docs/adr/0007-dynamischer-modus.md)).
