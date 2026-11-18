@@ -1,0 +1,17 @@
+{
+  "id": "anfaenger",
+  "name": "Anfänger",
+  "type": "rule",
+  "forgetRate": 0.3,
+  "mistakeRate": 0.25,
+  "rule": {
+    "keepMargin": 0,
+    "knockThresholds": [12, 11, 10, 9, 9],
+    "knockLead": 0,
+    "peekOwnValue": 0.5,
+    "peekOpponentValue": 0,
+    "swapMargin": 5,
+    "suspicionThreshold": 2
+  },
+  "rating": null
+}

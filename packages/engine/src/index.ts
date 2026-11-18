@@ -13,6 +13,7 @@ export {
 } from './cards.ts';
 export { legalActions } from './legal.ts';
 export { createRng, type Rng } from './rng.ts';
+export { shuffle } from './shuffle.ts';
 export { RULES, type RuleOptions } from './rules.ts';
 export { handPoints, scoreRound, type RoundScore } from './scoring.ts';
 export { addRoundToTotals, chooseFirstDealer, nextDealer } from './session.ts';

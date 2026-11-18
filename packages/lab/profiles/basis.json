@@ -1,0 +1,17 @@
+{
+  "id": "basis",
+  "name": "Basis",
+  "type": "rule",
+  "forgetRate": 0,
+  "mistakeRate": 0,
+  "rule": {
+    "keepMargin": 1,
+    "knockThresholds": [8, 7, 6, 5, 5],
+    "knockLead": 3,
+    "peekOwnValue": 2,
+    "peekOpponentValue": 0.5,
+    "swapMargin": 2,
+    "suspicionThreshold": 2
+  },
+  "rating": null
+}

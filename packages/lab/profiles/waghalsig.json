@@ -1,0 +1,17 @@
+{
+  "id": "waghalsig",
+  "name": "Waghalsig",
+  "type": "rule",
+  "forgetRate": 0,
+  "mistakeRate": 0,
+  "rule": {
+    "keepMargin": 1,
+    "knockThresholds": [14, 13, 12, 11, 11],
+    "knockLead": 0,
+    "peekOwnValue": 2,
+    "peekOpponentValue": 0.5,
+    "swapMargin": 2,
+    "suspicionThreshold": 0.06
+  },
+  "rating": null
+}

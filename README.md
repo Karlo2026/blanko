@@ -10,12 +10,13 @@ Beide nutzen dieselbe Engine und dieselben Bots.
 
 ## Stand
 
-- Phase 1 (Grundgerüst), Phase 2 (Engine) und Phase 3 (Bots) sind abgeschlossen.
+- Phase 1 bis 4 (Grundgerüst, Engine, Bots, Labor Teil 1) sind abgeschlossen.
 - Die Engine setzt alle Regeln, die Wertung und die Sicht pro Spieler um, siehe
   [Regeln](docs/regeln.md).
 - `bots` enthält Bot-Schnittstelle, Gedächtnis mit Vergessen, RuleBot, Zufalls-Bot,
   Profilformat und den Runner `playRound` ([ADR 0003](docs/adr/0003-bots.md)).
-- `lab` ist noch leer.
+- `lab` simuliert Partien und spielt Turniere mit Elo-Wertung ([ADR 0004](docs/adr/0004-labor.md),
+  [erstes Turnier](docs/labor/2026-11-18-erstes-turnier.md)).
 
 ## Engine in Kürze
 
@@ -64,6 +65,17 @@ Im Wurzelverzeichnis, jeweils für alle Pakete:
 | `npm run format`       | formatiert alles mit Prettier                           |
 | `npm run format:check` | prüft die Formatierung                                  |
 | `npm run check`        | alles oben Genannte nacheinander, Abschluss jeder Phase |
+
+Labor (Ergebnisse als JSON, CSV und Markdown in `packages/lab/results/`):
+
+| Befehl                                                        | Wirkung                                                       |
+| ------------------------------------------------------------- | ------------------------------------------------------------- |
+| `npm run lab -- simulate --seats basis,basis,zufall,zufall`   | feste Besetzung, Statistik je Profil                          |
+| `npm run lab -- tournament --profiles basis,anfaenger,zufall` | wechselnde Besetzung, Elo je Profil                           |
+| `npm run lab -- --help`                                       | alle Optionen (`--games`, `--seed`, `--players`, `--workers`) |
+
+Profile liegen als JSON in `packages/lab/profiles/`, `zufall` ist der eingebaute Zufalls-Bot.
+Gleicher Seed ergibt gleiche Ergebnisse, unabhängig von der Zahl der Worker.
 
 Nur für die App (`-w @blanko/app`):
 
