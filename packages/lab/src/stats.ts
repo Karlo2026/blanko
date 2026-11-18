@@ -15,6 +15,8 @@ interface EntrantStats {
 
 export interface Summary {
   readonly rounds: number;
+  /** Runden, die ohne Klopfen das Zuglimit erreicht haben. */
+  readonly abortedRounds: number;
   readonly avgTurns: number;
   readonly entrants: readonly EntrantStats[];
 }
@@ -56,13 +58,16 @@ function tallyRound(tallies: readonly Tally[], record: RoundRecord): void {
 export function summarize(records: readonly RoundRecord[], entrantIds: readonly string[]): Summary {
   const tallies = entrantIds.map(emptyTally);
   let turns = 0;
+  let aborted = 0;
   for (const record of records) {
     tallyRound(tallies, record);
     turns += record.turns;
+    if (record.aborted) aborted++;
   }
   const per = (value: number, count: number): number => (count === 0 ? 0 : value / count);
   return {
     rounds: records.length,
+    abortedRounds: aborted,
     avgTurns: per(turns, records.length),
     entrants: tallies.map((t, index) => ({
       id: entrantIds[index] ?? String(index),

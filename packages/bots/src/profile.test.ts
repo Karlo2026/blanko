@@ -18,6 +18,18 @@ describe('Bot-Profil', () => {
     expect(parseProfile(JSON.parse(JSON.stringify(valid)))).toEqual(valid);
   });
 
+  it('liest ein IsmctsBot-Profil mit Iterationen und optionalem Zeitbudget', () => {
+    const ismcts = { ...valid, type: 'ismcts', iterations: 200 };
+    expect(parseProfile(ismcts)).toMatchObject({
+      type: 'ismcts',
+      iterations: 200,
+      timeBudgetMs: null,
+    });
+    expect(parseProfile({ ...ismcts, timeBudgetMs: 300 })).toMatchObject({ timeBudgetMs: 300 });
+    expect(() => parseProfile({ ...ismcts, iterations: 0 })).toThrow('profile.iterations');
+    expect(typeof seatFromProfile(parseProfile(ismcts)).bot.chooseAction).toBe('function');
+  });
+
   it('setzt eine fehlende Wertung auf null', () => {
     expect(parseProfile({ ...valid, rating: undefined }).rating).toBeNull();
   });

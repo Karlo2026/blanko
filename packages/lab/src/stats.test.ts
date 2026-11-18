@@ -10,6 +10,7 @@ const rounds: RoundRecord[] = [
     ranking: [0, 1],
     knocker: 0,
     turns: 6,
+    aborted: false,
   },
   {
     seats: [0, 1],
@@ -18,6 +19,7 @@ const rounds: RoundRecord[] = [
     ranking: [1, 0],
     knocker: 0,
     turns: 10,
+    aborted: false,
   },
 ];
 
@@ -26,6 +28,7 @@ describe('summarize', () => {
     const summary = summarize(rounds, ['a', 'b']);
     expect(summary.rounds).toBe(2);
     expect(summary.avgTurns).toBe(8);
+    expect(summary.abortedRounds).toBe(0);
     expect(summary.entrants[0]).toEqual({
       id: 'a',
       seatsPlayed: 2,
@@ -46,6 +49,7 @@ describe('summarize', () => {
       ranking: [0, 1],
       knocker: null,
       turns: 4,
+      aborted: false,
     };
     expect(summarize([record], ['a']).entrants[0]).toMatchObject({
       seatsPlayed: 2,

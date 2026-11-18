@@ -60,7 +60,7 @@ export function toMarkdown(result: RunResult): string {
     '',
     ...options,
     '',
-    `${String(result.summary.rounds)} Runden, Ø ${fixed(result.summary.avgTurns, 1)} Züge pro Runde.`,
+    `${String(result.summary.rounds)} Runden, Ø ${fixed(result.summary.avgTurns, 1)} Züge pro Runde, ${String(result.summary.abortedRounds)} ohne Klopfen abgebrochen.`,
     '',
     ...table,
     '',

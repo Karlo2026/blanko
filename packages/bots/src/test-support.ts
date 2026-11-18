@@ -45,3 +45,11 @@ export const BASE_PARAMS: RuleParams = {
   swapMargin: 2,
   suspicionThreshold: 2,
 };
+
+/** Passt die Größe des Nachziehstapels an, damit die Sicht determinisiert werden kann. */
+export function consistent(view: PlayerView): PlayerView {
+  const known = view.hands.flat().filter((slot) => slot.kind === 'known').length;
+  const hidden = view.hands.flat().filter((slot) => slot.kind === 'hidden').length;
+  const seen = known + view.discardPile.length + (view.drawnCard === null ? 0 : 1);
+  return { ...view, drawPileSize: 52 - seen - hidden };
+}

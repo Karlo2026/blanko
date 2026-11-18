@@ -13,7 +13,12 @@ export interface RoundRecord {
   readonly ranking: readonly number[];
   readonly knocker: number | null;
   readonly turns: number;
+  /** Runde nach TURN_LIMIT Zügen ohne Klopfen abgebrochen und nach Stand gewertet. */
+  readonly aborted: boolean;
 }
+
+/** Schutz vor Profilen, die nie klopfen; echte Runden dauern im Mittel 20 bis 40 Züge. */
+const TURN_LIMIT = 1000;
 
 /** Ein unabhängig ausführbares Arbeitspaket. Reine Daten, damit es an einen Worker geht. */
 export interface ChunkTask {
@@ -37,7 +42,7 @@ export function runChunk(task: ChunkTask): RoundRecord[] {
       if (seat === undefined) throw new Error(`Unbekannter Teilnehmer ${String(entrant)}`);
       return seat;
     });
-    const final = playRound(startRound({ playerCount, dealer }, rng), players, rng);
+    const final = playRound(startRound({ playerCount, dealer }, rng), players, rng, TURN_LIMIT);
     const score = scoreRound(final, rng);
     records.push({
       seats,
@@ -46,6 +51,7 @@ export function runChunk(task: ChunkTask): RoundRecord[] {
       ranking: score.ranking,
       knocker: final.knocker,
       turns: final.turnCount,
+      aborted: final.phase.kind !== 'roundOver',
     });
     dealer = nextDealer(dealer, playerCount);
   }
@@ -53,7 +59,7 @@ export function runChunk(task: ChunkTask): RoundRecord[] {
 }
 
 /** Feste Paketgröße: So hängt das Ergebnis nur vom Seed ab, nicht von der Zahl der Worker. */
-export const CHUNK_SIZE = 500;
+export const CHUNK_SIZE = 100;
 
 /** Leitet aus dem Lauf-Seed einen eigenen Seed je Paket ab. */
 function chunkSeed(seed: number, index: number): number {

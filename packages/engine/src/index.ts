@@ -1,4 +1,4 @@
-export type { Action, GameEvent } from './actions.ts';
+export { actionKey, type Action, type GameEvent } from './actions.ts';
 export { applyAction } from './apply.ts';
 export {
   ALL_CARD_IDS,
@@ -11,6 +11,7 @@ export {
   type Rank,
   type Suit,
 } from './cards.ts';
+export { determinize } from './determinize.ts';
 export { legalActions } from './legal.ts';
 export { createRng, type Rng } from './rng.ts';
 export { shuffle } from './shuffle.ts';

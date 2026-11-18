@@ -10,6 +10,7 @@ const duel = (winner: number, loser: number): RoundRecord => ({
   ranking: [0, 1],
   knocker: null,
   turns: 1,
+  aborted: false,
 });
 
 describe('pairwiseWins', () => {
@@ -21,6 +22,7 @@ describe('pairwiseWins', () => {
       ranking: [1, 0, 2],
       knocker: null,
       turns: 3,
+      aborted: false,
     };
     expect(pairwiseWins([record], 3)).toEqual([
       [0, 1, 1],

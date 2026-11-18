@@ -9,13 +9,21 @@ export interface Seat {
 }
 
 /**
- * Spielt eine Runde bis zum Ende. Jeder Bot bekommt nur seine Sicht, gefiltert durch sein
+ * Spielt eine Runde bis zum Ende oder bis `turnLimit` weitere Züge gespielt sind. Das Limit
+ * schützt vor Runden, in denen kein Bot je klopft; abgebrochene Runden erkennt der Aufrufer an
+ * `phase.kind !== 'roundOver'`. Jeder Bot bekommt nur seine Sicht, gefiltert durch sein
  * Gedächtnis. Gedächtnisse ohne Vergessen werden übersprungen, weil sie sich nie ändern.
  */
-export function playRound(start: GameState, seats: readonly Seat[], rng: Rng): GameState {
+export function playRound(
+  start: GameState,
+  seats: readonly Seat[],
+  rng: Rng,
+  turnLimit = Infinity,
+): GameState {
   let state = start;
   let memories: readonly Memory[] = seats.map(() => freshMemory);
-  while (state.phase.kind !== 'roundOver') {
+  const lastTurn = start.turnCount + turnLimit;
+  while (state.phase.kind !== 'roundOver' && state.turnCount < lastTurn) {
     const seat = seats[state.current];
     const memory = memories[state.current];
     if (seat === undefined || memory === undefined) {

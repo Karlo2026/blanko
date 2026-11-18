@@ -9,7 +9,7 @@
 - **„Partie“ heißt hier eine Runde.** Eine Sitzung ist nur die Summe von Runden; für Statistik
   und Elo zählt jede Runde einzeln. Der Geber wechselt von Runde zu Runde.
 - **Reproduzierbarkeit unabhängig von der Worker-Zahl:** Ein Lauf wird in Pakete fester Größe
-  (500 Runden) geteilt, jedes mit einem aus dem Lauf-Seed abgeleiteten eigenen Seed. Die
+  (100 Runden) geteilt, jedes mit einem aus dem Lauf-Seed abgeleiteten eigenen Seed. Die
   Ergebnisse werden in Paketreihenfolge zusammengesetzt. Ein Test prüft, dass 1 und 3 Worker
   dasselbe liefern.
 - **Elo als Bradley-Terry-Schätzung:** Aus jeder Runde entstehen paarweise Vergleiche (jeder

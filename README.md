@@ -10,7 +10,8 @@ Beide nutzen dieselbe Engine und dieselben Bots.
 
 ## Stand
 
-- Phase 1 bis 4 (Grundgerüst, Engine, Bots, Labor Teil 1) sind abgeschlossen.
+- Phase 1 bis 4 (Grundgerüst, Engine, Bots, Labor Teil 1) sind abgeschlossen; Phase 5 (IsmctsBot)
+  steht als Zwischenstand ([ADR 0005](docs/adr/0005-ismcts-bot.md)).
 - Die Engine setzt alle Regeln, die Wertung und die Sicht pro Spieler um, siehe
   [Regeln](docs/regeln.md).
 - `bots` enthält Bot-Schnittstelle, Gedächtnis mit Vergessen, RuleBot, Zufalls-Bot,
