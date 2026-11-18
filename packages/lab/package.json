@@ -1,0 +1,10 @@
+{
+  "name": "@blanko/lab",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run --passWithNoTests",
+    "lint": "eslint . --no-error-on-unmatched-pattern"
+  }
+}
