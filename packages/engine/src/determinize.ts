@@ -1,8 +1,8 @@
-import { ALL_CARD_IDS, type CardId } from './cards.ts';
+import { ALL_CARD_IDS, cardOf, rankPoints, type Card, type CardId } from './cards.ts';
 import { everyoneMask, learn, playerMask, type Knowledge } from './knowledge.ts';
 import type { Rng } from './rng.ts';
 import { shuffle } from './shuffle.ts';
-import type { GameState, Hand, Phase } from './state.ts';
+import type { GameState, Hand, Phase, Slot } from './state.ts';
 import type { PlayerView } from './view.ts';
 
 function seenCards(view: PlayerView): Set<CardId> {
@@ -44,31 +44,91 @@ function assumedKnowledge(
   return drawn === null ? knowledge : learn(knowledge, drawn, playerMask(view.current));
 }
 
+/** Zieht ohne Zurücklegen; bei `limit` haben Karten über dessen Punktwert nur das Gewicht 1 − reading. */
+function drawCard(pool: CardId[], limit: Card | undefined, reading: number, rng: Rng): CardId {
+  if (pool.length === 0) throw new Error('Sicht ist widersprüchlich: zu wenige unbekannte Karten');
+  let index = pool.length - 1;
+  if (limit !== undefined && reading > 0) {
+    const cap = rankPoints(limit.rank);
+    const weights = pool.map((id) => (rankPoints(cardOf(id).rank) <= cap ? 1 : 1 - reading));
+    let target = rng.next() * weights.reduce((a, b) => a + b, 0);
+    index = 0;
+    while (index < pool.length - 1 && target >= (weights[index] ?? 0)) {
+      target -= weights[index] ?? 0;
+      index++;
+    }
+  }
+  const [card] = pool.splice(index, 1);
+  return card ?? 0;
+}
+
+/**
+ * Belegt alle verdeckten Plätze. Plätze mit beobachteter Herkunft kommen zuerst an die Reihe, damit
+ * die Gewichtung dort greift, bevor niedrige Karten an andere Plätze vergeben sind.
+ */
+function fillHands(view: PlayerView, pool: CardId[], reading: number, rng: Rng): Hand[] {
+  const hands: Slot[][] = view.hands.map((hand) =>
+    hand.map((slot) => (slot.kind === 'known' ? slot.card.id : null)),
+  );
+  const hidden = view.hands.flatMap((hand, player) =>
+    hand.flatMap((slot, index) =>
+      slot.kind === 'hidden' ? [{ player, index, keptOver: slot.keptOver }] : [],
+    ),
+  );
+  const ordered = [
+    ...hidden.filter((h) => h.keptOver !== undefined),
+    ...hidden.filter((h) => h.keptOver === undefined),
+  ];
+  for (const { player, index, keptOver } of ordered) {
+    const hand = hands[player];
+    if (hand !== undefined) hand[index] = drawCard(pool, keptOver, reading, rng);
+  }
+  return hands;
+}
+
+/** Herkunft im erzeugten Zustand: wie in der Sicht beobachtet, sonst keine. */
+function assumedKeptOver(view: PlayerView, hands: readonly Hand[]): (CardId | null)[] {
+  const keptOver: (CardId | null)[] = ALL_CARD_IDS.map(() => null);
+  view.hands.forEach((hand, player) => {
+    hand.forEach((slot, index) => {
+      const card = hands[player]?.[index];
+      if (
+        slot.kind === 'hidden' &&
+        slot.keptOver !== undefined &&
+        card !== undefined &&
+        card !== null
+      ) {
+        keptOver[card] = slot.keptOver.id;
+      }
+    });
+  });
+  return keptOver;
+}
+
 /**
  * Erzeugt einen vollständigen Zustand, der zur Sicht eines Spielers passt: Bekanntes bleibt,
  * alle ihm unbekannten Karten werden zufällig auf verdeckte Plätze und Nachziehstapel verteilt.
  * Grundlage für Information Set Monte Carlo Tree Search.
+ *
+ * `reading` (0 bis 1) liest Gegner: Wer eine gezogene Karte behalten und dafür eine Karte offen
+ * abgeworfen hat, hat vermutlich eine niedrigere bekommen. Bei 1 bekommt ein solcher Platz nur noch
+ * Karten bis zum Wert der abgeworfenen, bei 0 ist die Verteilung gleichmäßig.
  */
-export function determinize(view: PlayerView, rng: Rng, opponentSelfKnowledge: number): GameState {
+export function determinize(
+  view: PlayerView,
+  rng: Rng,
+  opponentSelfKnowledge: number,
+  reading: number,
+): GameState {
   const seen = seenCards(view);
-  const unknown = shuffle(
+  const pool = shuffle(
     ALL_CARD_IDS.filter((id) => !seen.has(id)),
     rng,
   );
-  const takeUnknown = (): CardId => {
-    const card = unknown.pop();
-    if (card === undefined)
-      throw new Error('Sicht ist widersprüchlich: zu wenige unbekannte Karten');
-    return card;
-  };
-
-  const hands: Hand[] = view.hands.map((hand) =>
-    hand.map((slot) =>
-      slot.kind === 'empty' ? null : slot.kind === 'known' ? slot.card.id : takeUnknown(),
-    ),
-  );
-  const drawn = view.phase === 'drawn' ? (view.drawnCard?.id ?? takeUnknown()) : null;
-  if (unknown.length !== view.drawPileSize) {
+  const hands = fillHands(view, pool, reading, rng);
+  const drawn =
+    view.phase === 'drawn' ? (view.drawnCard?.id ?? drawCard(pool, undefined, 0, rng)) : null;
+  if (pool.length !== view.drawPileSize) {
     throw new Error(
       'Sicht ist widersprüchlich: Nachziehstapel passt nicht zu den unbekannten Karten',
     );
@@ -84,7 +144,7 @@ export function determinize(view: PlayerView, rng: Rng, opponentSelfKnowledge: n
     current: view.current,
     phase,
     hands,
-    drawPile: unknown,
+    drawPile: pool,
     discardPile: view.discardPile.map((card) => card.id),
     knowledge: assumedKnowledge(view, hands, drawn, opponentSelfKnowledge, rng),
     matchableRank: view.matchableRank,
@@ -92,5 +152,6 @@ export function determinize(view: PlayerView, rng: Rng, opponentSelfKnowledge: n
     turnsAfterKnock: view.turnsAfterKnock,
     turnCount: view.turnCount,
     canStillPeek: view.hands.map((_, player) => player === view.viewer && view.canStillPeek),
+    keptOver: assumedKeptOver(view, hands),
   };
 }

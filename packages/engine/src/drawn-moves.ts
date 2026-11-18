@@ -22,8 +22,9 @@ function cardAt(state: GameState, player: number, slot: number): CardId {
 function keep(state: GameState, drawn: CardId, slot: number): ActionResult {
   const player = state.current;
   const replaced = cardAt(state, player, slot);
+  const placed = withHand(state, player, replaceAt(handOf(state, player), slot, drawn));
   const next = discardFaceUp(
-    withHand(state, player, replaceAt(handOf(state, player), slot, drawn)),
+    { ...placed, keptOver: replaceAt(state.keptOver, drawn, replaced) },
     replaced,
   );
   return endTurn(next, [{ type: 'kept', player, slot, discarded: cardOf(replaced) }]);

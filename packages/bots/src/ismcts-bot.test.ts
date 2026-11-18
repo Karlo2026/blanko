@@ -3,7 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { createIsmctsBot } from './ismcts-bot.ts';
 import { BASE_PARAMS, cardFor, consistent, hidden, known, makeView } from './test-support.ts';
 
-const bot = createIsmctsBot({ iterations: 60, timeBudgetMs: null, rollout: BASE_PARAMS }, 0);
+const bot = createIsmctsBot(
+  { iterations: 60, timeBudgetMs: null, rollout: BASE_PARAMS, reading: 0 },
+  0,
+);
 const opponentHidden = [hidden, hidden, hidden, hidden];
 const keeps = (slots: number[]): Action[] => slots.map((slot) => ({ type: 'keep', slot }));
 
@@ -67,7 +70,7 @@ describe('IsmctsBot', () => {
 
   it('hält ein Zeitbudget ein', () => {
     const slow = createIsmctsBot(
-      { iterations: 1_000_000, timeBudgetMs: 50, rollout: BASE_PARAMS },
+      { iterations: 1_000_000, timeBudgetMs: 50, rollout: BASE_PARAMS, reading: 0 },
       0,
     );
     const view = consistent(

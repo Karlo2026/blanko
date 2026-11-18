@@ -1,6 +1,7 @@
 # ADR 0005: IsmctsBot
 
-**Status:** abgeschlossen (Phase 5). Ziel „deutlich stärker als der beste RuleBot“ nicht erreicht.
+**Status:** abgeschlossen (Phase 5). Ziel „deutlich stärker als der beste RuleBot“ in Phase 5 nicht
+erreicht, mit Gegner lesen in Phase 9 dann doch (siehe [ADR 0008](0008-gegner-lesen.md)).
 
 ## Ergebnis
 

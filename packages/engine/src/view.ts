@@ -6,7 +6,8 @@ import type { GameState, PlayerId } from './state.ts';
 /** Was ein Spieler über einen Platz weiß. Unbekannte Karten verraten nicht einmal ihre ID. */
 export type SlotView =
   | { readonly kind: 'empty' }
-  | { readonly kind: 'hidden' }
+  /** `keptOver`: öffentlich gesehen, welche Karte für diese hier offen abgeworfen wurde. */
+  | { readonly kind: 'hidden'; readonly keptOver?: Card }
   | { readonly kind: 'known'; readonly card: Card };
 
 export interface PlayerView {
@@ -40,9 +41,13 @@ export function getPlayerView(state: GameState, viewer: PlayerId): PlayerView {
       if (card === null) {
         return { kind: 'empty' };
       }
-      return revealed || knows(state.knowledge, card, viewer)
-        ? { kind: 'known', card: cardOf(card) }
-        : { kind: 'hidden' };
+      if (revealed || knows(state.knowledge, card, viewer)) {
+        return { kind: 'known', card: cardOf(card) };
+      }
+      const keptOver = at(state.keptOver, card);
+      return keptOver === null
+        ? { kind: 'hidden' }
+        : { kind: 'hidden', keptOver: cardOf(keptOver) };
     }),
   );
   return {

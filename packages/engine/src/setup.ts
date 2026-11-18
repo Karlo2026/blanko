@@ -74,5 +74,6 @@ export function startRound(setup: RoundSetup, rng: Rng): GameState {
     turnsAfterKnock: 0,
     turnCount: 0,
     canStillPeek: hands.map(() => true),
+    keptOver: ALL_CARD_IDS.map(() => null),
   };
 }

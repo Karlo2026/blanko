@@ -24,7 +24,10 @@ describe('Bot-Profil', () => {
       type: 'ismcts',
       iterations: 200,
       timeBudgetMs: null,
+      reading: 0,
     });
+    expect(parseProfile({ ...ismcts, reading: 0.8 })).toMatchObject({ reading: 0.8 });
+    expect(() => parseProfile({ ...ismcts, reading: 2 })).toThrow('profile.reading');
     expect(parseProfile({ ...ismcts, timeBudgetMs: 300 })).toMatchObject({ timeBudgetMs: 300 });
     expect(() => parseProfile({ ...ismcts, iterations: 0 })).toThrow('profile.iterations');
     expect(typeof seatFromProfile(parseProfile(ismcts)).bot.chooseAction).toBe('function');

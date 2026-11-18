@@ -26,14 +26,14 @@ describe('determinize', () => {
     for (let seed = 1; seed <= 30; seed++) {
       const real = midRound(seed, seed % 20);
       const view = getPlayerView(real, real.current);
-      const guess = determinize(view, createRng(seed + 100), 1);
+      const guess = determinize(view, createRng(seed + 100), 1, 0);
       expect(getPlayerView(guess, real.current)).toEqual(view);
     }
   });
 
   it('verwendet jede Karte genau einmal', () => {
     const view = getPlayerView(midRound(3, 15), 2);
-    const guess = determinize(view, createRng(1), 1);
+    const guess = determinize(view, createRng(1), 1, 0);
     const drawn = guess.phase.kind === 'drawn' ? [guess.phase.card] : [];
     const all = [
       ...guess.hands.flat().filter((c) => c !== null),
@@ -47,15 +47,15 @@ describe('determinize', () => {
 
   it('verteilt unbekannte Karten zufällig', () => {
     const view = getPlayerView(midRound(4, 0), 1);
-    const first = determinize(view, createRng(1), 1);
-    const second = determinize(view, createRng(2), 1);
+    const first = determinize(view, createRng(1), 1, 0);
+    const second = determinize(view, createRng(2), 1, 0);
     expect(first.hands).not.toEqual(second.hands);
   });
 
   it('lässt Gegner ihre eigenen Karten mit der angegebenen Wahrscheinlichkeit kennen', () => {
     const view = getPlayerView(midRound(5, 0), 1);
     const knownShare = (share: number): number => {
-      const guess = determinize(view, createRng(1), share);
+      const guess = determinize(view, createRng(1), share, 0);
       const own = (guess.hands[2] ?? []).filter((c) => c !== null);
       return own.filter((card) => knows(guess.knowledge, card, 2)).length / own.length;
     };
@@ -65,7 +65,7 @@ describe('determinize', () => {
 
   it('liefert Zustände, aus denen sich regelkonform weiterspielen lässt', () => {
     const real = midRound(6, 7);
-    const guess = determinize(getPlayerView(real, real.current), createRng(1), 1);
+    const guess = determinize(getPlayerView(real, real.current), createRng(1), 1, 0);
     expect(legalActions(guess)).toEqual(legalActions(real));
   });
 });

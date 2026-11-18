@@ -35,6 +35,8 @@ export type BotProfile = CommonProfile &
         readonly iterations: number;
         /** Zeitbudget pro Entscheidung in ms; null heißt nur Iterationen (reproduzierbar). */
         readonly timeBudgetMs: number | null;
+        /** Gegner lesen, 0 bis 1; fehlt das Feld, gilt 0. */
+        readonly reading: number;
       }
   );
 
@@ -84,6 +86,7 @@ export function parseProfile(value: unknown, path = 'profile'): BotProfile {
           raw.timeBudgetMs === null || raw.timeBudgetMs === undefined
             ? null
             : expectNumber(raw.timeBudgetMs, `${path}.timeBudgetMs`, 1),
+        reading: raw.reading === undefined ? 0 : expectNumber(raw.reading, `${path}.reading`, 0, 1),
       };
     default:
       throw new ValidationError(`${path}.type: 'rule' oder 'ismcts' erwartet`);
@@ -99,6 +102,7 @@ export function seatFromProfile(profile: BotProfile): Seat {
             iterations: profile.iterations,
             timeBudgetMs: profile.timeBudgetMs,
             rollout: profile.rule,
+            reading: profile.reading,
           },
           profile.mistakeRate,
         );

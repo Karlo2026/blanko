@@ -25,6 +25,8 @@ export function draw(state: GameState, rng: Rng): ActionResult {
       phase: { kind: 'drawn', card },
       matchableRank: null,
       canStillPeek: replaceAt(state.canStillPeek, player, false),
+      // Eine frisch gezogene Karte hat noch keine Herkunft; alte Beobachtungen gelten nicht mehr.
+      keptOver: replaceAt(state.keptOver, card, null),
     },
     events,
   };
@@ -64,7 +66,10 @@ function failMatch(state: GameState, slot: number, rng: Rng): ActionResult {
   let penaltySlot: number | null = null;
   if (penalty !== null) {
     const placed = placePenalty(handOf(next, player), penalty);
-    next = withHand(next, player, placed.hand);
+    next = {
+      ...withHand(next, player, placed.hand),
+      keptOver: replaceAt(next.keptOver, penalty, null),
+    };
     penaltySlot = placed.slot;
   }
   const events: GameEvent[] = reshuffled ? [{ type: 'reshuffled' }] : [];

@@ -20,6 +20,11 @@ export interface IsmctsParams {
   readonly timeBudgetMs: number | null;
   /** Faustregeln, nach denen in den Rollouts alle Spieler ziehen. */
   readonly rollout: RuleParams;
+  /**
+   * Gegner lesen (0 bis 1): wie stark Determinisierungen annehmen, dass eine behaltene Karte nicht mehr
+   * wert ist als die dafür abgeworfene. 0 verteilt unbekannte Karten gleichmäßig.
+   */
+  readonly reading: number;
 }
 
 /**
@@ -93,7 +98,7 @@ function evaluate(
   for (; samples < params.iterations && Date.now() < deadline; samples++) {
     // Gemeinsame Zufallszahlen: Alle Kandidaten treffen auf dieselbe Kartenverteilung und denselben
     // weiteren Spielverlauf. So bleibt vom Rauschen vor allem der Unterschied zwischen den Aktionen.
-    const guess = determinize(view, rng, OPPONENT_SELF_KNOWLEDGE);
+    const guess = determinize(view, rng, OPPONENT_SELF_KNOWLEDGE, params.reading);
     const seed = rng.nextInt(2 ** 31);
     const rewards = candidates.map((action) => rollout(guess, action, view.viewer, seats, seed));
     const baseline = rewards[0] ?? 0;

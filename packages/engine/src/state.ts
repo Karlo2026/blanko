@@ -42,6 +42,11 @@ export interface GameState {
   readonly turnCount: number;
   /** Ob ein Spieler seine unteren Karten noch ansehen darf (bis zu seinem ersten Ziehen). */
   readonly canStillPeek: readonly boolean[];
+  /**
+   * Öffentlich beobachtet, je Karten-ID: welche Karte offen abgeworfen wurde, als diese Karte
+   * behalten wurde; sonst null. Hängt an der Karte und wandert deshalb bei einem 10-Tausch mit.
+   */
+  readonly keptOver: readonly (CardId | null)[];
 }
 
 export function nextPlayer(player: PlayerId, playerCount: number): PlayerId {

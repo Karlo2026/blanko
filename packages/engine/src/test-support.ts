@@ -52,6 +52,7 @@ export function scenario(s: Scenario): GameState {
     turnsAfterKnock: s.turnsAfterKnock ?? 0,
     turnCount: s.turnCount ?? 0,
     canStillPeek: s.hands.map(() => true),
+    keptOver: ALL_CARD_IDS.map(() => null),
   };
 }
 
