@@ -10,8 +10,32 @@ Beide nutzen dieselbe Engine und dieselben Bots.
 
 ## Stand
 
-Phase 1 (Grundgerüst) ist abgeschlossen. Die Engine enthält bisher nur den Zufallsgenerator mit
-Seed; `bots` und `lab` sind noch leer.
+- Phase 1 (Grundgerüst) und Phase 2 (Engine) sind abgeschlossen.
+- Die Engine setzt alle Regeln, die Wertung und die Sicht pro Spieler um, siehe
+  [Regeln](docs/regeln.md).
+- `bots` und `lab` sind noch leer.
+
+## Engine in Kürze
+
+```ts
+import {
+  applyAction,
+  createRng,
+  getPlayerView,
+  legalActions,
+  scoreRound,
+  startRound,
+} from '@blanko/engine';
+
+const rng = createRng(42);
+let state = startRound({ playerCount: 3, dealer: 0 }, rng);
+while (state.phase.kind !== 'roundOver') {
+  const view = getPlayerView(state, state.current); // nur das, was dieser Spieler wissen darf
+  const action = legalActions(state)[0]; // hier entscheidet später ein Bot
+  state = applyAction(state, action, rng).state;
+}
+const { ranking, placementPoints } = scoreRound(state, rng);
+```
 
 ## Voraussetzungen
 
