@@ -94,6 +94,9 @@ Nur für die App (`-w @blanko/app`):
 
 ## App aufs iPhone
 
+**Veröffentlicht unter https://karlo2026.github.io/blanko/** – jeder Push auf `main` testet, baut
+und veröffentlicht neu (`.github/workflows/pages.yml`).
+
 1. Bauen: `npm run build -w @blanko/app`. Das Ergebnis liegt in `packages/app/dist/`.
 2. Den Ordner `dist/` als statische Seite hosten, etwa über GitHub Pages. Alle Pfade sind relativ,
    ein Unterpfad wie `/blanko/` funktioniert also.
