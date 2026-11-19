@@ -21,7 +21,7 @@
           "swapMargin": 1.73,
           "suspicionThreshold": 1.2
         },
-        "rating": 1337,
+        "rating": 1318,
         "type": "rule"
       }
     },
@@ -45,7 +45,7 @@
           "swapMargin": 1.73,
           "suspicionThreshold": 1.2
         },
-        "rating": 1426,
+        "rating": 1423,
         "type": "rule"
       }
     },
@@ -69,7 +69,7 @@
           "swapMargin": 1.73,
           "suspicionThreshold": 1.2
         },
-        "rating": 1534,
+        "rating": 1530,
         "type": "rule"
       }
     },
@@ -93,7 +93,7 @@
           "swapMargin": 1.73,
           "suspicionThreshold": 1.2
         },
-        "rating": 1645,
+        "rating": 1652,
         "type": "rule"
       }
     },
@@ -117,7 +117,7 @@
           "swapMargin": 1.73,
           "suspicionThreshold": 1.2
         },
-        "rating": 1668,
+        "rating": 1672,
         "type": "ismcts",
         "iterations": 100,
         "timeBudgetMs": 400,
@@ -143,7 +143,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1337,
+      "rating": 1318,
       "type": "rule"
     },
     {
@@ -163,7 +163,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1359,
+      "rating": 1360,
       "type": "rule"
     },
     {
@@ -183,7 +183,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1390,
+      "rating": 1401,
       "type": "rule"
     },
     {
@@ -203,7 +203,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1426,
+      "rating": 1423,
       "type": "rule"
     },
     {
@@ -223,7 +223,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1448,
+      "rating": 1455,
       "type": "rule"
     },
     {
@@ -243,7 +243,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1497,
+      "rating": 1493,
       "type": "rule"
     },
     {
@@ -263,7 +263,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1534,
+      "rating": 1530,
       "type": "rule"
     },
     {
@@ -283,7 +283,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1568,
+      "rating": 1572,
       "type": "rule"
     },
     {
@@ -303,7 +303,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1628,
+      "rating": 1623,
       "type": "rule"
     },
     {
@@ -323,7 +323,7 @@
         "swapMargin": 1.73,
         "suspicionThreshold": 1.2
       },
-      "rating": 1645,
+      "rating": 1652,
       "type": "rule"
     }
   ]

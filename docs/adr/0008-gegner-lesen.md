@@ -38,11 +38,14 @@ vermessen, gehört aber nicht zur Leiter des dynamischen Modus, weil er langsame
 
 | Stufe       | Elo  | Siegquote im Export-Turnier |
 | ----------- | ---- | --------------------------- |
-| Anfänger    | 1337 | 5,3 %                       |
-| Mittel      | 1426 | 14,5 %                      |
-| Stark       | 1534 | 28,0 %                      |
-| Meister     | 1645 | 41,8 %                      |
-| Großmeister | 1668 | 54,9 %                      |
+| Anfänger    | 1318 | 5,0 %                       |
+| Mittel      | 1423 | 13,3 %                      |
+| Stark       | 1530 | 26,4 %                      |
+| Meister     | 1652 | 41,8 %                      |
+| Großmeister | 1672 | 56,6 %                      |
+
+Neu vermessen am 19.11.2026 nach den Hausregel-Änderungen (Sonderkarten bei jedem offenen Ablegen,
+Rundensieg ohne Karten); vorher lagen die Werte zwischen 1337 und 1668.
 
 Im Browser auf dem Mac dauert ein Großmeister-Zug rund 0,8 bis 1 Sekunde (davon 0,75 s bewusste
 Pause). Auf dem iPhone begrenzt das Zeitbudget die Rechenzeit; erreicht er dort die 100 Iterationen
