@@ -17,6 +17,15 @@ describe('Statuszeile', () => {
     ).toBe('Greta tauscht blind mit dir.');
   });
 
+  it('meldet, wenn jemand keine Karten mehr hat und gewinnt', () => {
+    expect(moveText([{ type: 'handEmptied', player: 2 }], names)).toBe(
+      'Greta hat keine Karten mehr und gewinnt die Runde!',
+    );
+    expect(moveText([{ type: 'handEmptied', player: 0 }], names)).toBe(
+      'Du hast keine Karten mehr und gewinnst die Runde!',
+    );
+  });
+
   it('hängt an, wer gerade zieht, oder dass der Mensch dran ist', () => {
     expect(
       statusText('Karl legt eine 7 ab.', names, viewWith({ phase: 'drawn', current: 2 })),

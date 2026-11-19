@@ -58,6 +58,20 @@ export function discardFaceUp(state: GameState, card: CardId): GameState {
  * danach ist die Runde vorbei. A11: Kann der nächste Spieler nicht ziehen, weil auch
  * Neumischen keine Karte mehr liefert, endet die Runde sofort.
  */
+/**
+ * Hausregel (19.11.2026): Wer seine letzte Karte ablegt, beendet die Runde sofort und wird Erster.
+ * Eine abgelegte 8, 9 oder 10 wirkt dann nicht mehr; die anderen bekommen keinen Zug mehr.
+ */
+export function endRoundWithEmptyHand(
+  state: GameState,
+  events: readonly GameEvent[],
+): ActionResult {
+  return {
+    state: { ...state, turnCount: state.turnCount + 1, phase: { kind: 'roundOver' } },
+    events: [...events, { type: 'handEmptied', player: state.current }, { type: 'roundEnded' }],
+  };
+}
+
 export function endTurn(
   state: GameState,
   events: readonly GameEvent[],

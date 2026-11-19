@@ -4,11 +4,12 @@
  * Jede Annahme steht genau hier. Wer eine Regel ändern will, ändert nur diese Datei.
  * Die Nummern entsprechen der Liste „Festgelegte Annahmen“ in docs/regeln.md.
  *
- * Drei Annahmen sind keine Schalter, weil sie aus dem Datenmodell folgen oder keine
- * sinnvolle Alternative haben:
+ * Diese Punkte sind keine Schalter, weil sie aus dem Datenmodell folgen, keine sinnvolle
+ * Alternative haben oder durch Hausregel-Änderungen des Auftraggebers festgelegt sind:
  * - A4 ist entfallen: Seit der Hausregel-Änderung vom 19.11.2026 wirkt eine 8, 9 oder 10 bei jedem
  *   offenen Ablegen, auch aus der Hand oder per Gleiche-Karte-Zug (siehe `finishDiscard` in turn.ts).
- * - A7 (Spieler ohne Karten hat 0 Punkte und spielt weiter): folgt aus Wertung und Zugregeln.
+ * - A7 ist ersetzt: Seit der Hausregel vom 19.11.2026 endet die Runde sofort, wenn ein Spieler seine
+ *   letzte Karte ablegt; er wird Erster (siehe `endRoundWithEmptyHand` in turn.ts).
  * - A10 (zufälliger erster Geber, danach im Uhrzeigersinn): siehe session.ts.
  * - A11 (liefert auch Neumischen keine Karte mehr, endet die Runde sofort; eine fällige
  *   Strafkarte entfällt): siehe turn.ts und turn-start-moves.ts.

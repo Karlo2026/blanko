@@ -116,6 +116,7 @@ export function flightsFor(
       case 'peekedOwn':
       case 'peekedOpponent':
       case 'knocked':
+      case 'handEmptied':
       case 'roundEnded':
         return [];
     }

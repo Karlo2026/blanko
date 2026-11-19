@@ -29,6 +29,10 @@ export function RulesPage({ onBack }: RulesPageProps) {
           jeder andere noch genau einen Zug, dann wird aufgedeckt. Die Karten des Klopfers bleiben
           unverändert.
         </li>
+        <li>
+          <strong>Keine Karten mehr:</strong> Wer seine letzte Karte ablegt, beendet die Runde
+          sofort und gewinnt sie. Die anderen werden nach ihren Punkten platziert.
+        </li>
       </ul>
       <h2>Sonderkarten</h2>
       <p>

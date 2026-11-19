@@ -65,6 +65,8 @@ export type GameEvent =
       readonly penaltySlot: number | null;
     }
   | { readonly type: 'knocked'; readonly player: PlayerId }
+  /** Der Spieler hat keine Karten mehr; die Runde endet sofort, er wird Erster. */
+  | { readonly type: 'handEmptied'; readonly player: PlayerId }
   | { readonly type: 'roundEnded' };
 
 /** Eindeutiger Schlüssel einer Aktion, um sie mit den erlaubten Aktionen zu vergleichen. */

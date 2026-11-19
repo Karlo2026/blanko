@@ -17,6 +17,9 @@ Verbindliche Quelle sind die Hausregeln aus dem Auftrag. Diese Seite fasst zusam
   tauschen. Die Wirkung ist freiwillig. Keine Wirkung hat eine behaltene 8, 9 oder 10 und eine
   falsch abgelegte, die zurück in die Hand geht.
   Ursprünglich galt: nur frisch gezogen und direkt abgelegt.
+- **Keine Karten mehr** (Hausregel vom 19.11.2026): Wer seine letzte Karte (per gleicher Karte)
+  ablegt, beendet die Runde sofort und wird Erster; die anderen werden nach Punkten platziert, auch
+  wenn vorher geklopft wurde. Eine dabei abgelegte 8, 9 oder 10 wirkt nicht mehr.
 - Nach dem Klopfen hat jeder andere Spieler genau noch einen Zug. Die Karten des Klopfers
   bleiben unverändert.
 - Falsch abgelegt: Strafkarte vom Nachziehstapel, verdeckt und unbesehen.
@@ -41,7 +44,7 @@ Alle Schalter stehen in [`packages/engine/src/rules.ts`](../packages/engine/src/
 | A4  | ~~Eine per Gleiche-Karte-Zug abgelegte 8, 9 oder 10 löst nichts aus.~~ Entfallen durch die Hausregel-Änderung vom 19.11.2026. | –                                         |
 | A5  | Falsch abgelegte Karte geht verdeckt zurück und ist danach allen bekannt.                                                     | `failedMatchRevealsToAll`                 |
 | A6  | Kein 10-Tausch mit dem Klopfer; eine 9 darf seine Karten anschauen.                                                           | `tenSwapWithKnocker`, `ninePeekAtKnocker` |
-| A7  | Ein Spieler ohne Karten hat 0 Punkte und spielt weiter.                                                                       | folgt aus Wertung und Zügen               |
+| A7  | ~~Ein Spieler ohne Karten hat 0 Punkte und spielt weiter.~~ Ersetzt durch die Hausregel vom 19.11.2026 (siehe oben).          | –                                         |
 | A8  | Beim Neumischen bleibt die oberste Ablagekarte liegen (auch für Strafkarten).                                                 | `reshuffleKeepsTopDiscard`                |
 | A9  | Klopfen ist ab dem ersten Zug erlaubt.                                                                                        | `knockFromFirstTurn`                      |
 | A10 | Erster Geber zufällig, danach im Uhrzeigersinn.                                                                               | `session.ts`                              |

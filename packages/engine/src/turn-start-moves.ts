@@ -9,6 +9,7 @@ import type { GameState, Hand } from './state.ts';
 import {
   type ActionResult,
   discardFaceUp,
+  endRoundWithEmptyHand,
   endTurn,
   finishDiscard,
   handOf,
@@ -93,5 +94,9 @@ export function matchDiscard(state: GameState, slot: number, rng: Rng): ActionRe
   const emptied = withHand(state, player, replaceAt(handOf(state, player), slot, null));
   const discarded = discardFaceUp(emptied, card);
   const next = RULES.matchChains ? discarded : { ...discarded, matchableRank: null };
-  return finishDiscard(next, card, [{ type: 'matched', player, slot, card: cardOf(card) }]);
+  const events: GameEvent[] = [{ type: 'matched', player, slot, card: cardOf(card) }];
+  if (handOf(next, player).every((c) => c === null)) {
+    return endRoundWithEmptyHand(next, events);
+  }
+  return finishDiscard(next, card, events);
 }

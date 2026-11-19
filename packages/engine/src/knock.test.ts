@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { legalActions } from './legal.ts';
 import { createRng } from './rng.ts';
-import { handPoints } from './scoring.ts';
 import { startRound } from './setup.ts';
 import { card, play, scenario } from './test-support.ts';
 
@@ -56,27 +55,6 @@ describe('Klopfen und Rundenende', () => {
   it('A9: erlaubt das Klopfen schon im ersten Zug', () => {
     const state = startRound({ playerCount: 4, dealer: 0 }, createRng(1));
     expect(legalActions(state)).toContainEqual({ type: 'knock' });
-  });
-});
-
-describe('A7: Spieler ohne Karten', () => {
-  const empty = () =>
-    scenario({
-      hands: [
-        [null, null, null, null],
-        [card(5), card(6), card(7), card(11)],
-      ],
-      drawPile: [card(9, 'hearts'), card(4, 'hearts')],
-    });
-
-  it('hat 0 Punkte', () => {
-    expect(handPoints([null, null, null, null])).toBe(0);
-  });
-
-  it('kann ziehen und direkt ablegen oder klopfen', () => {
-    expect(new Set(legalActions(empty()).map((a) => a.type))).toEqual(new Set(['draw', 'knock']));
-    const drawn = play(empty(), [{ type: 'draw' }]).state;
-    expect(legalActions(drawn)).toEqual([{ type: 'discardDrawn' }]);
   });
 });
 

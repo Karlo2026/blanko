@@ -34,6 +34,8 @@ function describe(event: GameEvent, names: readonly string[]): string | null {
       return `${subject(names, event.player, 'legst', 'legt')} ${cardAccusative(event.card)} – passt nicht, Strafkarte.`;
     case 'knocked':
       return `${subject(names, event.player, 'klopfst', 'klopft')}!`;
+    case 'handEmptied':
+      return `${subject(names, event.player, 'hast', 'hat')} keine Karten mehr und ${event.player === HUMAN ? 'gewinnst' : 'gewinnt'} die Runde!`;
     case 'roundEnded':
       return 'Die Runde ist vorbei.';
   }
