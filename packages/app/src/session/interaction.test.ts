@@ -62,8 +62,8 @@ describe('Zugbeginn', () => {
 });
 
 describe('Nach dem Ziehen', () => {
-  it('tauscht durch Antippen einer eigenen Karte oder legt per Ablage ab', () => {
-    const view = viewWith({ phase: 'drawn', drawnCard: cardFor(5) });
+  it('tauscht durch Antippen einer eigenen Karte oder legt per Ablage ab – auch eine 8 sofort', () => {
+    const view = viewWith({ phase: 'drawn', drawnCard: cardFor(8) });
     const legal: Action[] = [{ type: 'discardDrawn' }, ...keeps];
     expect(resolveTap(view, legal, NO_SELECTION, { kind: 'own', slot: 1 })?.action).toEqual({
       type: 'keep',
@@ -73,44 +73,43 @@ describe('Nach dem Ziehen', () => {
       type: 'discardDrawn',
     });
   });
+});
 
-  it('8: Ablage antippen, dann eigene Karte anschauen', () => {
-    const view = viewWith({ phase: 'drawn', drawnCard: cardFor(8) });
+describe('Nach dem Ablegen einer 8, 9 oder 10', () => {
+  const special = (rank: 8 | 9 | 10, knocker: number | null = null) =>
+    viewWith({ phase: 'special', specialRank: rank, knocker });
+  const skip: Action = { type: 'skipSpecial' };
+
+  it('8: eigene Karte antippen schaut sie an; verzichten nur über den Knopf', () => {
     const legal: Action[] = [
-      { type: 'discardDrawn' },
-      ...keeps,
+      skip,
       ...[0, 1, 2, 3].map((slot): Action => ({ type: 'peekOwn', slot })),
     ];
-    const special = resolveTap(view, legal, NO_SELECTION, { kind: 'discardPile' });
-    expect(special).toEqual({ selection: { kind: 'special', rank: 8 }, action: null });
-    expect(
-      resolveTap(view, legal, { kind: 'special', rank: 8 }, { kind: 'own', slot: 3 })?.action,
-    ).toEqual({
+    expect(resolveTap(special(8), legal, NO_SELECTION, { kind: 'own', slot: 3 })?.action).toEqual({
       type: 'peekOwn',
       slot: 3,
     });
+    expect(resolveTap(special(8), legal, NO_SELECTION, { kind: 'discardPile' })).toBeNull();
+    expect(mainButton(special(8), legal, NO_SELECTION)).toBe('skip');
   });
 
-  it('9: Ablage antippen, dann Gegnerkarte anschauen; ein zweiter Tipp auf die Ablage verzichtet', () => {
-    const view = viewWith({ phase: 'drawn', drawnCard: cardFor(9) });
-    const peeks = opponents.map((o): Action => ({ type: 'peekOpponent', ...o }));
-    const legal: Action[] = [{ type: 'discardDrawn' }, ...keeps, ...peeks];
-    const selection: Selection = { kind: 'special', rank: 9 };
+  it('9: Gegnerkarte antippen schaut sie an; eigene Karten reagieren nicht', () => {
+    const legal: Action[] = [
+      skip,
+      ...opponents.map((o): Action => ({ type: 'peekOpponent', ...o })),
+    ];
     expect(
-      resolveTap(view, legal, selection, { kind: 'opponent', player: 2, slot: 0 })?.action,
+      resolveTap(special(9), legal, NO_SELECTION, { kind: 'opponent', player: 2, slot: 0 })?.action,
     ).toEqual({
       type: 'peekOpponent',
       target: 2,
       targetSlot: 0,
     });
-    expect(resolveTap(view, legal, selection, { kind: 'discardPile' })?.action).toEqual({
-      type: 'discardDrawn',
-    });
-    expect(tappableKeys(view, legal, selection).has('own:0')).toBe(false);
+    expect(tappableKeys(special(9), legal, NO_SELECTION).has('own:0')).toBe(false);
   });
 
   it('10: erst die eigene, dann die gegnerische Karte; nicht mit dem Klopfer', () => {
-    const view = viewWith({ phase: 'drawn', drawnCard: cardFor(10), knocker: 2 });
+    const view = special(10, 2);
     const swaps = [0, 1, 2, 3].flatMap((slot) =>
       [0, 1, 2, 3].map((targetSlot): Action => ({
         type: 'blindSwap',
@@ -119,9 +118,11 @@ describe('Nach dem Ziehen', () => {
         targetSlot,
       })),
     );
-    const legal: Action[] = [{ type: 'discardDrawn' }, ...keeps, ...swaps];
-    const chosen = resolveTap(view, legal, { kind: 'special', rank: 10 }, { kind: 'own', slot: 1 });
-    expect(chosen).toEqual({ selection: { kind: 'swap', slot: 1 }, action: null });
+    const legal: Action[] = [skip, ...swaps];
+    expect(resolveTap(view, legal, NO_SELECTION, { kind: 'own', slot: 1 })).toEqual({
+      selection: { kind: 'swap', slot: 1 },
+      action: null,
+    });
     const selection: Selection = { kind: 'swap', slot: 1 };
     expect(
       resolveTap(view, legal, selection, { kind: 'opponent', player: 1, slot: 3 })?.action,
@@ -133,5 +134,6 @@ describe('Nach dem Ziehen', () => {
     });
     expect(resolveTap(view, legal, selection, { kind: 'opponent', player: 2, slot: 3 })).toBeNull();
     expect(mainButton(view, legal, selection)).toBe('cancel');
+    expect(mainButton(view, legal, NO_SELECTION)).toBe('skip');
   });
 });

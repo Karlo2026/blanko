@@ -37,6 +37,15 @@ describe('Statuszeile', () => {
 });
 
 describe('Hinweiszeile', () => {
+  it('erklärt nach dem Ziehen einer Sonderkarte, was Ablage und eigene Karte bewirken', () => {
+    expect(
+      hintText(viewWith({ phase: 'drawn', drawnCard: cardFor(8) }), { kind: 'none' }, names, false),
+    ).toBe('Ablage antippen: 8 ablegen und ihre Wirkung nutzen. Eigene Karte antippen: tauschen.');
+    expect(
+      hintText(viewWith({ phase: 'special', specialRank: 9 }), { kind: 'none' }, names, false),
+    ).toContain('Ohne Wirkung');
+  });
+
   it('sagt, was gerade geht', () => {
     expect(hintText(viewWith({ matchableRank: 1 }), { kind: 'none' }, names, true)).toBe(
       'Tippe den Stapel zum Ziehen, eine eigene Karte für ein Ass – oder klopfe.',

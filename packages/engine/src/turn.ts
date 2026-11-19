@@ -1,9 +1,9 @@
 import type { GameEvent } from './actions.ts';
-import { cardOf, type CardId } from './cards.ts';
+import { cardOf, type CardId, type Rank } from './cards.ts';
 import { revealToAll } from './knowledge.ts';
 import { at, replaceAt } from './list.ts';
 import { canTakeFromDrawPile } from './piles.ts';
-import { nextPlayer, type GameState, type Hand, type PlayerId } from './state.ts';
+import { nextPlayer, type GameState, type Hand, type PlayerId, type SpecialRank } from './state.ts';
 
 export interface ActionResult {
   readonly state: GameState;
@@ -12,6 +12,31 @@ export interface ActionResult {
 
 export function handOf(state: GameState, player: PlayerId): Hand {
   return at(state.hands, player);
+}
+
+export function cardAt(state: GameState, player: PlayerId, slot: number): CardId {
+  const card = at(handOf(state, player), slot);
+  if (card === null) {
+    throw new Error(`Platz ${String(slot)} von Spieler ${String(player)} ist leer`);
+  }
+  return card;
+}
+
+const isSpecialRank = (rank: Rank): rank is SpecialRank => rank === 8 || rank === 9 || rank === 10;
+
+/**
+ * Nach einem offenen Ablegen: War es eine 8, 9 oder 10, folgt die Sonderfunktion als eigener Schritt
+ * (Hausregel: bei jedem offenen Ablegen, auch aus der Hand); sonst endet der Zug.
+ */
+export function finishDiscard(
+  state: GameState,
+  discarded: CardId,
+  events: readonly GameEvent[],
+): ActionResult {
+  const rank = cardOf(discarded).rank;
+  return isSpecialRank(rank)
+    ? { state: { ...state, phase: { kind: 'special', rank } }, events }
+    : endTurn(state, events);
 }
 
 export function withHand(state: GameState, player: PlayerId, hand: Hand): GameState {

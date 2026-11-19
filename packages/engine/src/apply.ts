@@ -1,5 +1,6 @@
 import { actionKey, type Action } from './actions.ts';
 import { resolveDrawn } from './drawn-moves.ts';
+import { resolveSpecial } from './special-moves.ts';
 import { legalActions } from './legal.ts';
 import type { Rng } from './rng.ts';
 import type { GameState } from './state.ts';
@@ -28,12 +29,14 @@ export function applyAction(state: GameState, action: Action, rng: Rng): ActionR
       return matchDiscard(state, action.slot, rng);
     case 'keep':
     case 'discardDrawn':
-    case 'peekOwn':
-    case 'peekOpponent':
-    case 'blindSwap':
       if (state.phase.kind !== 'drawn') {
         throw new Error('Keine gezogene Karte vorhanden');
       }
       return resolveDrawn(state, state.phase.card, action);
+    case 'peekOwn':
+    case 'peekOpponent':
+    case 'blindSwap':
+    case 'skipSpecial':
+      return resolveSpecial(state, action);
   }
 }

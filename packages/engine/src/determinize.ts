@@ -105,6 +105,13 @@ function assumedKeptOver(view: PlayerView, hands: readonly Hand[]): (CardId | nu
   return keptOver;
 }
 
+function phaseOf(view: PlayerView, drawn: CardId | null): Phase {
+  if (drawn !== null) return { kind: 'drawn', card: drawn };
+  if (view.phase === 'special' && view.specialRank !== null)
+    return { kind: 'special', rank: view.specialRank };
+  return { kind: view.phase === 'roundOver' ? 'roundOver' : 'turnStart' };
+}
+
 /**
  * Erzeugt einen vollständigen Zustand, der zur Sicht eines Spielers passt: Bekanntes bleibt,
  * alle ihm unbekannten Karten werden zufällig auf verdeckte Plätze und Nachziehstapel verteilt.
@@ -133,10 +140,7 @@ export function determinize(
       'Sicht ist widersprüchlich: Nachziehstapel passt nicht zu den unbekannten Karten',
     );
   }
-  const phase: Phase =
-    drawn === null
-      ? { kind: view.phase === 'roundOver' ? 'roundOver' : 'turnStart' }
-      : { kind: 'drawn', card: drawn };
+  const phase = phaseOf(view, drawn);
 
   return {
     playerCount: view.playerCount,

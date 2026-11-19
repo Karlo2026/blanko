@@ -52,6 +52,8 @@ export interface Table {
   readonly tap: (tap: Tap) => void;
   readonly knock: () => void;
   readonly cancel: () => void;
+  /** Auf die Wirkung der gerade abgelegten 8, 9 oder 10 verzichten. */
+  readonly skip: () => void;
 }
 
 const prefersReducedMotion = (): boolean =>
@@ -234,6 +236,10 @@ export function useTable(
     },
     cancel() {
       commit({ ...tableRef.current, selection: NO_SELECTION });
+    },
+    skip() {
+      if (!busy && legal.some((a) => a.type === 'skipSpecial'))
+        perform({ type: 'skipSpecial' }, NO_SELECTION);
     },
   };
 }

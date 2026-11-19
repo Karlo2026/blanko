@@ -47,7 +47,7 @@ describe('Gleiche Karte ablegen', () => {
     expect(state.discardPile.slice(-3).map((id) => id % 13)).toEqual([6, 6, 6]);
   });
 
-  it('A4: eine per Gleiche-Karte-Zug abgelegte 8 löst keine Sonderfunktion aus', () => {
+  it('eine per Gleiche-Karte-Zug abgelegte 8 erlaubt danach die Sonderfunktion (Hausregel)', () => {
     const state = scenario({
       hands: [
         [card(8, 'hearts'), card(2)],
@@ -58,8 +58,8 @@ describe('Gleiche Karte ablegen', () => {
     });
     const { state: after, events } = play(state, [{ type: 'matchDiscard', slot: 0 }]);
     expect(events.map((e) => e.type)).toEqual(['matched']);
-    expect(after.phase.kind).toBe('turnStart');
-    expect(after.current).toBe(1);
+    expect(after.phase).toEqual({ kind: 'special', rank: 8 });
+    expect(after.current).toBe(0);
   });
 });
 

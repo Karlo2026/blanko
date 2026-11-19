@@ -50,7 +50,7 @@ describe('Öffentliche Herkunft beim Behalten', () => {
     const holdingTen = {
       ...state,
       current: 1,
-      phase: { kind: 'drawn' as const, card: card(10, 'spades') },
+      phase: { kind: 'special' as const, rank: 10 as const },
     };
     const swapped = play(holdingTen, [
       { type: 'blindSwap', slot: 0, target: 0, targetSlot: 1 },

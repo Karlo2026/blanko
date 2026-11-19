@@ -1,4 +1,11 @@
-import { MIN_PLAYERS, type Action, type PlayerView, type Rng, type SlotView } from '@blanko/engine';
+import {
+  MIN_PLAYERS,
+  type Action,
+  type PlayerView,
+  type Rank,
+  type Rng,
+  type SlotView,
+} from '@blanko/engine';
 import { pickRandom, type Bot } from './bot.ts';
 import {
   estimateHand,
@@ -52,39 +59,84 @@ function withSlot(hand: readonly SlotView[], slot: number, replacement: SlotView
   return hand.map((current, index) => (index === slot ? replacement : current));
 }
 
-/** Um wie viele geschätzte Punkte sich die eigene Hand verbessert, wenn ein Platz neu belegt wird. */
-function gainOfReplacing(s: Situation, slot: number, replacement: SlotView): number {
-  return s.ownEstimate - estimateHand(withSlot(s.ownHand, slot, replacement), s.unknownValue);
-}
-
 function isHidden(view: PlayerView, player: number, slot: number): boolean {
   return view.hands[player]?.[slot]?.kind === 'hidden';
 }
 
-/** Bewertung einer Aktion nach dem Ziehen; null heißt „nicht sinnvoll“. */
-function scoreDrawnAction(s: Situation, action: Action, params: RuleParams): number | null {
-  const drawn = s.view.drawnCard;
+/**
+ * Bewertung einer Sonderaktion nach dem Ablegen einer 8, 9 oder 10; null heißt „nicht sinnvoll“.
+ * `hand` ist die eigene Hand, auf die sich die Aktion bezieht.
+ */
+function scoreSpecialAction(
+  s: Situation,
+  hand: readonly SlotView[],
+  action: Action,
+  params: RuleParams,
+): number | null {
   switch (action.type) {
-    case 'discardDrawn':
-      return 0;
-    case 'keep': {
-      if (drawn === null) return null;
-      const gain = gainOfReplacing(s, action.slot, { kind: 'known', card: drawn });
-      return gain >= params.keepMargin ? gain : null;
-    }
     case 'peekOwn':
-      return isHidden(s.view, s.view.viewer, action.slot) ? params.peekOwnValue : null;
+      return hand[action.slot]?.kind === 'hidden' ? params.peekOwnValue : null;
     case 'peekOpponent':
       return isHidden(s.view, action.target, action.targetSlot) ? params.peekOpponentValue : null;
     case 'blindSwap': {
       const theirs = s.view.hands[action.target]?.[action.targetSlot];
       if (theirs === undefined) return null;
-      const gain = gainOfReplacing(s, action.slot, theirs);
+      const before = estimateHand(hand, s.unknownValue);
+      const gain = before - estimateHand(withSlot(hand, action.slot, theirs), s.unknownValue);
       return gain >= params.swapMargin ? gain : null;
     }
     default:
       return null;
   }
+}
+
+/** Möglichen Sonderaktionen nach dem Ablegen einer Karte dieses Rangs, bezogen auf `hand`. */
+function possibleSpecials(s: Situation, hand: readonly SlotView[], rank: Rank): Action[] {
+  const own = hand.flatMap((slot, index) => (slot.kind === 'empty' ? [] : [index]));
+  const opponents = s.view.hands.flatMap((theirs, target) =>
+    target === s.view.viewer || (rank === 10 && target === s.view.knocker)
+      ? []
+      : theirs.flatMap((slot, targetSlot) =>
+          slot.kind === 'empty' ? [] : [{ target, targetSlot }],
+        ),
+  );
+  if (rank === 8) return own.map((slot): Action => ({ type: 'peekOwn', slot }));
+  if (rank === 9) return opponents.map((t): Action => ({ type: 'peekOpponent', ...t }));
+  if (rank === 10)
+    return own.flatMap((slot) => opponents.map((t): Action => ({ type: 'blindSwap', slot, ...t })));
+  return [];
+}
+
+/** Was es wert ist, nach dem Ablegen einer Karte dieses Rangs die Sonderfunktion nutzen zu dürfen. */
+function specialValue(
+  s: Situation,
+  hand: readonly SlotView[],
+  rank: Rank,
+  params: RuleParams,
+): number {
+  let best = 0;
+  for (const action of possibleSpecials(s, hand, rank)) {
+    best = Math.max(best, scoreSpecialAction(s, hand, action, params) ?? 0);
+  }
+  return best;
+}
+
+/**
+ * Nach dem Ziehen: ablegen oder behalten. Seit der Hausregel-Änderung wirkt auch eine 8, 9 oder 10,
+ * die beim Behalten aus der Hand abgelegt wird; ihr Wert zählt deshalb mit.
+ */
+function scoreDrawnAction(s: Situation, action: Action, params: RuleParams): number | null {
+  const drawn = s.view.drawnCard;
+  if (drawn === null) return null;
+  if (action.type === 'discardDrawn') return specialValue(s, s.ownHand, drawn.rank, params);
+  if (action.type !== 'keep') return null;
+  const handAfter = withSlot(s.ownHand, action.slot, { kind: 'known', card: drawn });
+  const gain = s.ownEstimate - estimateHand(handAfter, s.unknownValue);
+  if (gain < params.keepMargin) return null;
+  const replaced = s.ownHand[action.slot];
+  return (
+    gain + (replaced?.kind === 'known' ? specialValue(s, handAfter, replaced.card.rank, params) : 0)
+  );
 }
 
 /**
@@ -101,26 +153,28 @@ function leaderBonus(s: Situation, action: Action): number {
 }
 
 /**
- * Bestbewertete Aktion; echte Gleichstände entscheidet der Zufall. Vorher gewann die erste in der
- * Liste, und weil die Liste nach Spielernummer sortiert ist, traf jeder 10-Tausch bei verdeckten
- * Karten Spieler 0 – im Labor kostete das Sitz 0 bei 6 Spielern 0,19 Platzierungspunkte.
+ * Bestbewertete Aktion über `fallback` (Bewertung 0); echte Gleichstände entscheidet der Zufall.
+ * Vorher gewann die erste in der Liste, und weil die Liste nach Spielernummer sortiert ist, traf jeder
+ * 10-Tausch bei verdeckten Karten Spieler 0 – im Labor kostete das Sitz 0 bei 6 Spielern 0,19
+ * Platzierungspunkte.
  */
-function chooseAfterDraw(
+function chooseBest(
   s: Situation,
   legal: readonly Action[],
-  params: RuleParams,
+  fallback: Action,
+  score: (action: Action) => number | null,
   rng: Rng,
 ): Action {
-  let best: Action[] = [{ type: 'discardDrawn' }];
-  let bestScore = 0;
+  let best: Action[] = [fallback];
+  let bestScore = score(fallback) ?? 0;
   for (const action of legal) {
-    const raw = scoreDrawnAction(s, action, params);
-    if (raw === null || action.type === 'discardDrawn') continue;
-    const score = raw + leaderBonus(s, action);
-    if (score > bestScore) {
+    const raw = action.type === fallback.type ? null : score(action);
+    if (raw === null) continue;
+    const value = raw + leaderBonus(s, action);
+    if (value > bestScore) {
       best = [action];
-      bestScore = score;
-    } else if (score === bestScore) {
+      bestScore = value;
+    } else if (value === bestScore) {
       best.push(action);
     }
   }
@@ -203,10 +257,27 @@ export function createRuleBot(params: RuleParams, mistakeRate: number): Bot {
       if (mistakeRate > 0 && rng.next() < mistakeRate) {
         return chooseMistake(legal, rng);
       }
-      const situation = situationOf(view);
-      return view.phase === 'drawn'
-        ? chooseAfterDraw(situation, legal, params, rng)
-        : chooseAtTurnStart(situation, legal, params, rng);
+      const s = situationOf(view);
+      switch (view.phase) {
+        case 'drawn':
+          return chooseBest(
+            s,
+            legal,
+            { type: 'discardDrawn' },
+            (a) => scoreDrawnAction(s, a, params),
+            rng,
+          );
+        case 'special':
+          return chooseBest(
+            s,
+            legal,
+            { type: 'skipSpecial' },
+            (a) => scoreSpecialAction(s, s.ownHand, a, params),
+            rng,
+          );
+        default:
+          return chooseAtTurnStart(s, legal, params, rng);
+      }
     },
   };
 }

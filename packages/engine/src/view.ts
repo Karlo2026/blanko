@@ -1,7 +1,7 @@
 import { cardOf, type Card, type Rank } from './cards.ts';
 import { knows } from './knowledge.ts';
 import { at } from './list.ts';
-import type { GameState, PlayerId } from './state.ts';
+import type { GameState, PlayerId, SpecialRank } from './state.ts';
 
 /** Was ein Spieler über einen Platz weiß. Unbekannte Karten verraten nicht einmal ihre ID. */
 export type SlotView =
@@ -15,7 +15,9 @@ export interface PlayerView {
   readonly playerCount: number;
   readonly dealer: PlayerId;
   readonly current: PlayerId;
-  readonly phase: 'turnStart' | 'drawn' | 'roundOver';
+  readonly phase: 'turnStart' | 'drawn' | 'special' | 'roundOver';
+  /** In der Phase 'special': der Rang der gerade abgelegten Sonderkarte. */
+  readonly specialRank: SpecialRank | null;
   /** Nur gesetzt, wenn der Betrachter selbst gerade gezogen hat. */
   readonly drawnCard: Card | null;
   readonly hands: readonly (readonly SlotView[])[];
@@ -56,6 +58,7 @@ export function getPlayerView(state: GameState, viewer: PlayerId): PlayerView {
     dealer: state.dealer,
     current: state.current,
     phase: state.phase.kind,
+    specialRank: state.phase.kind === 'special' ? state.phase.rank : null,
     drawnCard:
       state.phase.kind === 'drawn' && state.current === viewer ? cardOf(state.phase.card) : null,
     hands,

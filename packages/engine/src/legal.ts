@@ -1,9 +1,8 @@
 import type { Action } from './actions.ts';
-import { cardOf, type CardId } from './cards.ts';
 import { at } from './list.ts';
 import { canTakeFromDrawPile } from './piles.ts';
 import { RULES } from './rules.ts';
-import type { GameState, Hand, PlayerId } from './state.ts';
+import type { GameState, Hand, PlayerId, SpecialRank } from './state.ts';
 
 function occupiedSlots(hand: Hand): number[] {
   return hand.flatMap((card, slot) => (card === null ? [] : [slot]));
@@ -41,37 +40,38 @@ function turnStartActions(state: GameState): Action[] {
   return actions;
 }
 
-/** Sonderfunktionen gelten nur für die frisch gezogene und direkt abgelegte Karte. */
-function specialActions(state: GameState, drawn: CardId): Action[] {
+/** Wirkung der gerade abgelegten 8, 9 oder 10; verzichten ist immer erlaubt. */
+function specialActions(state: GameState, rank: SpecialRank): Action[] {
   const own = occupiedSlots(at(state.hands, state.current));
-  switch (cardOf(drawn).rank) {
+  const skip: Action = { type: 'skipSpecial' };
+  switch (rank) {
     case 8:
-      return own.map((slot) => ({ type: 'peekOwn', slot }));
+      return [skip, ...own.map((slot): Action => ({ type: 'peekOwn', slot }))];
     case 9:
-      return opponentSlots(state, RULES.ninePeekAtKnocker).map((t) => ({
-        type: 'peekOpponent',
-        ...t,
-      }));
-    case 10:
-      return own.flatMap((slot) =>
-        opponentSlots(state, RULES.tenSwapWithKnocker).map((t): Action => ({
-          type: 'blindSwap',
-          slot,
+      return [
+        skip,
+        ...opponentSlots(state, RULES.ninePeekAtKnocker).map((t): Action => ({
+          type: 'peekOpponent',
           ...t,
         })),
-      );
-    default:
-      return [];
+      ];
+    case 10:
+      return [
+        skip,
+        ...own.flatMap((slot) =>
+          opponentSlots(state, RULES.tenSwapWithKnocker).map((t): Action => ({
+            type: 'blindSwap',
+            slot,
+            ...t,
+          })),
+        ),
+      ];
   }
 }
 
-function drawnActions(state: GameState, drawn: CardId): Action[] {
+function drawnActions(state: GameState): Action[] {
   const own = occupiedSlots(at(state.hands, state.current));
-  return [
-    { type: 'discardDrawn' },
-    ...own.map((slot): Action => ({ type: 'keep', slot })),
-    ...specialActions(state, drawn),
-  ];
+  return [{ type: 'discardDrawn' }, ...own.map((slot): Action => ({ type: 'keep', slot }))];
 }
 
 /** Alle erlaubten Aktionen des aktuellen Spielers. Die oberste Ablagekarte zu nehmen ist nie erlaubt. */
@@ -80,7 +80,9 @@ export function legalActions(state: GameState): Action[] {
     case 'turnStart':
       return turnStartActions(state);
     case 'drawn':
-      return drawnActions(state, state.phase.card);
+      return drawnActions(state);
+    case 'special':
+      return specialActions(state, state.phase.rank);
     case 'roundOver':
       return [];
   }

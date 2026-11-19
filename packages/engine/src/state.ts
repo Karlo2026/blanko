@@ -16,9 +16,14 @@ export type Hand = readonly Slot[];
 export const BOTTOM_SLOTS: readonly number[] = [2, 3];
 export const INITIAL_HAND_SIZE = 4;
 
+/** Ränge mit Sonderfunktion: 8 eigene Karte anschauen, 9 Gegnerkarte anschauen, 10 blind tauschen. */
+export type SpecialRank = 8 | 9 | 10;
+
 export type Phase =
   | { readonly kind: 'turnStart' }
   | { readonly kind: 'drawn'; readonly card: CardId }
+  /** Gerade wurde eine 8, 9 oder 10 offen abgelegt; jetzt darf ihre Wirkung genutzt werden. */
+  | { readonly kind: 'special'; readonly rank: SpecialRank }
   | { readonly kind: 'roundOver' };
 
 /** Vollständiger, unveränderlicher Zustand einer Runde. Ändert sich nur über applyAction. */

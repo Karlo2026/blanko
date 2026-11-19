@@ -72,21 +72,23 @@ export function hintText(
       ? 'Du hast geklopft. Die anderen haben noch einen Zug.'
       : `${names[view.current] ?? '?'} ist am Zug.`;
   }
-  const skip = ' Oder tippe die Ablage, um ohne Wirkung abzulegen.';
-  switch (selection.kind) {
-    case 'match':
-      return 'Tippe die Ablage, um die Karte abzulegen.';
-    case 'swap':
-      return 'Tippe die gegnerische Karte für den blinden Tausch.';
-    case 'special':
-      if (selection.rank === 8) return `Tippe eine eigene Karte, um sie anzuschauen.${skip}`;
-      if (selection.rank === 9) return `Tippe eine Karte eines Gegners, um sie anzuschauen.${skip}`;
-      return `Tippe erst die eigene Karte für den blinden Tausch.${skip}`;
-    case 'none':
-      break;
+  if (selection.kind === 'match') return 'Tippe die Ablage, um die Karte abzulegen.';
+  if (selection.kind === 'swap') return 'Tippe jetzt die gegnerische Karte für den blinden Tausch.';
+  if (view.phase === 'special') {
+    const skip = ' Oder „Ohne Wirkung“.';
+    if (view.specialRank === 8)
+      return `8 abgelegt: Tippe eine eigene Karte, um sie anzuschauen.${skip}`;
+    if (view.specialRank === 9)
+      return `9 abgelegt: Tippe eine Karte eines Gegners, um sie anzuschauen.${skip}`;
+    return `10 abgelegt: Tippe erst deine Karte, dann die eines Gegners, um sie blind zu tauschen.${skip}`;
   }
-  if (view.phase === 'drawn')
-    return 'Tippe eine eigene Karte zum Tauschen oder die Ablage zum Ablegen.';
+  if (view.phase === 'drawn') {
+    const rank = view.drawnCard?.rank;
+    const special = rank === 8 || rank === 9 || rank === 10;
+    return special
+      ? `Ablage antippen: ${String(rank)} ablegen und ihre Wirkung nutzen. Eigene Karte antippen: tauschen.`
+      : 'Tippe eine eigene Karte zum Tauschen oder die Ablage zum Ablegen.';
+  }
   const match =
     view.matchableRank === null
       ? ''

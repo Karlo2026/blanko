@@ -77,7 +77,7 @@ function swapSection(analysis: Analysis): string[] {
   return [
     '## Wann lohnt sich der 10-Tausch, und mit wem?',
     '',
-    'Platzierungspunkte „tauschen“ minus „10 einfach ablegen“, nach Punktwert der eigenen und der Zielkarte',
+    'Platzierungspunkte „tauschen“ minus „verzichten“ nach einer abgelegten 10, nach Punktwert der eigenen und der Zielkarte',
     '(soweit bekannt) und danach, ob der Gegner geschätzt führt.',
     '',
     ...table(['eigene Karte', 'Zielkarte', 'Ziel führt', 'Ziel führt nicht'], rows),

@@ -90,18 +90,40 @@ describe('RuleBot nach dem Ziehen', () => {
 
   it('nutzt eine 8, um eine unbekannte eigene Karte anzuschauen', () => {
     const view = makeView({
-      phase: 'drawn',
-      drawnCard: cardFor(8),
+      phase: 'special',
+      specialRank: 8,
       hands: [[known(2), hidden, known(3), known(4)], opponentHidden],
     });
     const peeks = [0, 1, 2, 3].map((slot): Action => ({ type: 'peekOwn', slot }));
-    expect(bot.chooseAction(view, legalDrawn(peeks), rng)).toEqual({ type: 'peekOwn', slot: 1 });
+    expect(bot.chooseAction(view, [{ type: 'skipSpecial' }, ...peeks], rng)).toEqual({
+      type: 'peekOwn',
+      slot: 1,
+    });
+    // Ist alles bekannt, lohnt kein Blick: verzichten.
+    const allKnown = makeView({
+      ...view,
+      hands: [[known(2), known(5), known(3), known(4)], opponentHidden],
+    });
+    expect(bot.chooseAction(allKnown, [{ type: 'skipSpecial' }, ...peeks], rng)).toEqual({
+      type: 'skipSpecial',
+    });
+  });
+
+  it('rechnet die Sonderfunktion einer eigenen 8 mit, die beim Behalten abgelegt wird', () => {
+    // Ass gezogen: Es ersetzt am besten die bekannte 8 (Gewinn 7), und die abgelegte 8 erlaubt
+    // danach noch einen Blick auf die verdeckte Karte.
+    const view = makeView({
+      phase: 'drawn',
+      drawnCard: cardFor(1),
+      hands: [[known(8), hidden, known(3), known(4)], opponentHidden],
+    });
+    expect(bot.chooseAction(view, legalDrawn(), rng)).toEqual({ type: 'keep', slot: 0 });
   });
 
   it('tauscht per 10 seinen bekannten König gegen ein bekanntes Ass des Gegners', () => {
     const view = makeView({
-      phase: 'drawn',
-      drawnCard: cardFor(10),
+      phase: 'special',
+      specialRank: 10,
       hands: [
         [known(2), known(13), known(3), known(4)],
         [hidden, known(1, 'hearts'), hidden, hidden],
@@ -115,7 +137,7 @@ describe('RuleBot nach dem Ziehen', () => {
         targetSlot,
       })),
     );
-    expect(bot.chooseAction(view, legalDrawn(swaps), rng)).toEqual({
+    expect(bot.chooseAction(view, [{ type: 'skipSpecial' }, ...swaps], rng)).toEqual({
       type: 'blindSwap',
       slot: 1,
       target: 1,
@@ -169,8 +191,8 @@ describe('RuleBot: Zielwahl bei Gleichstand', () => {
 
   it('schiebt eine hohe Karte dem Gegner zu, der am besten dasteht', () => {
     const view = makeView({
-      phase: 'drawn',
-      drawnCard: cardFor(10),
+      phase: 'special',
+      specialRank: 10,
       hands: [
         [known(2), known(13), known(3), known(4)],
         [hidden, hidden, hidden, hidden],
@@ -180,7 +202,7 @@ describe('RuleBot: Zielwahl bei Gleichstand', () => {
     });
     const choice = bot.chooseAction(
       view,
-      [{ type: 'discardDrawn' }, ...swapsFrom(1, [1, 2, 3])],
+      [{ type: 'skipSpecial' }, ...swapsFrom(1, [1, 2, 3])],
       rng,
     );
     expect(choice).toMatchObject({ type: 'blindSwap', slot: 1, target: 2 });
@@ -190,8 +212,8 @@ describe('RuleBot: Zielwahl bei Gleichstand', () => {
     const view = makeView({
       viewer: 2,
       current: 2,
-      phase: 'drawn',
-      drawnCard: cardFor(10),
+      phase: 'special',
+      specialRank: 10,
       hands: [
         [hidden, hidden, hidden, hidden],
         [hidden, hidden, hidden, hidden],
@@ -202,7 +224,7 @@ describe('RuleBot: Zielwahl bei Gleichstand', () => {
       Array.from({ length: 40 }, () => {
         const choice = bot.chooseAction(
           view,
-          [{ type: 'discardDrawn' }, ...swapsFrom(1, [0, 1])],
+          [{ type: 'skipSpecial' }, ...swapsFrom(1, [0, 1])],
           rng,
         );
         return choice.type === 'blindSwap' ? choice.target : -1;

@@ -129,7 +129,7 @@ function analyzeSwap(
   const leader =
     opponents.indexOf(Math.min(...opponents)) === swap.target ? 'Ziel führt' : 'Ziel führt nicht';
   const key = `${slotBucket(view, view.viewer, swap.slot)}|${slotBucket(view, swap.target, swap.targetSlot)}|${leader}`;
-  addTo(out.swap, key, compare(state, swap, { type: 'discardDrawn' }, seats, rng));
+  addTo(out.swap, key, compare(state, swap, { type: 'skipSpecial' }, seats, rng));
 }
 
 function analyzeSuspicion(
@@ -192,7 +192,7 @@ export function analyze(profile: BotProfile, rounds: number, seed: number): Anal
         if (view.phase === 'turnStart') {
           analyzeKnock(state, view, seats, rng, out);
           analyzeSuspicion(state, view, ruleChoice, seats, rng, out);
-        } else if (view.drawnCard?.rank === 10) {
+        } else if (view.phase === 'special' && view.specialRank === 10) {
           analyzeSwap(state, view, seats, rng, out);
         }
       }

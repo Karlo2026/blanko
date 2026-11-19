@@ -6,7 +6,14 @@ import { takeFromDrawPile } from './piles.ts';
 import type { Rng } from './rng.ts';
 import { RULES } from './rules.ts';
 import type { GameState, Hand } from './state.ts';
-import { discardFaceUp, endTurn, handOf, withHand, type ActionResult } from './turn.ts';
+import {
+  type ActionResult,
+  discardFaceUp,
+  endTurn,
+  finishDiscard,
+  handOf,
+  withHand,
+} from './turn.ts';
 
 /** Ziehen beendet den Zug nicht; danach muss behalten oder abgelegt werden. */
 export function draw(state: GameState, rng: Rng): ActionResult {
@@ -86,5 +93,5 @@ export function matchDiscard(state: GameState, slot: number, rng: Rng): ActionRe
   const emptied = withHand(state, player, replaceAt(handOf(state, player), slot, null));
   const discarded = discardFaceUp(emptied, card);
   const next = RULES.matchChains ? discarded : { ...discarded, matchableRank: null };
-  return endTurn(next, [{ type: 'matched', player, slot, card: cardOf(card) }]);
+  return finishDiscard(next, card, [{ type: 'matched', player, slot, card: cardOf(card) }]);
 }

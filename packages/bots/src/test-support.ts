@@ -25,6 +25,7 @@ export function makeView(view: Partial<PlayerView> & Pick<PlayerView, 'hands'>):
     current: 0,
     phase: 'turnStart',
     drawnCard: null,
+    specialRank: null,
     drawPileSize: 30,
     discardPile: [cardFor(6, 'diamonds')],
     matchableRank: null,

@@ -9,9 +9,7 @@ export type Selection =
   | { readonly kind: 'none' }
   /** Zu Beginn des Zuges angehobene eigene Karte für einen Gleiche-Karte-Zug. */
   | { readonly kind: 'match'; readonly slot: number }
-  /** Gezogene 8, 9 oder 10 soll abgelegt werden; jetzt wird das Ziel gewählt. */
-  | { readonly kind: 'special'; readonly rank: 8 | 9 | 10 }
-  /** 10: eigene Karte gewählt, jetzt die gegnerische. */
+  /** Nach einer abgelegten 10: eigene Karte gewählt, jetzt die gegnerische. */
   | { readonly kind: 'swap'; readonly slot: number };
 
 export const NO_SELECTION: Selection = { kind: 'none' };
@@ -58,65 +56,63 @@ function atTurnStart(legal: readonly Action[], selection: Selection, tap: Tap): 
   return null;
 }
 
-function specialRank(view: PlayerView, legal: readonly Action[]): 8 | 9 | 10 | null {
-  const rank = view.drawnCard?.rank;
-  const special = has(
-    legal,
-    (a) => a.type === 'peekOwn' || a.type === 'peekOpponent' || a.type === 'blindSwap',
-  );
-  return special && (rank === 8 || rank === 9 || rank === 10) ? rank : null;
+/** Nach dem Ziehen: eigene Karte antippen tauscht, Ablage antippen legt die gezogene Karte ab. */
+function afterDraw(legal: readonly Action[], tap: Tap): TapResult | null {
+  if (tap.kind === 'discardPile')
+    return { selection: NO_SELECTION, action: { type: 'discardDrawn' } };
+  if (tap.kind === 'own' && has(legal, (a) => a.type === 'keep' && a.slot === tap.slot)) {
+    return { selection: NO_SELECTION, action: { type: 'keep', slot: tap.slot } };
+  }
+  return null;
 }
 
-function afterDraw(
+/**
+ * Nach dem Ablegen einer 8, 9 oder 10: Ziel antippen. Bei der 10 erst die eigene, dann die
+ * gegnerische Karte. Verzichten geht nur über den Knopf „Ohne Wirkung“, damit es nicht aus Versehen
+ * passiert.
+ */
+function inSpecial(
   view: PlayerView,
   legal: readonly Action[],
   selection: Selection,
   tap: Tap,
 ): TapResult | null {
   const done = (action: Action): TapResult => ({ selection: NO_SELECTION, action });
-  if (tap.kind === 'discardPile') {
-    // Erster Tipp auf die Ablage bei 8/9/10 startet die Sonderfunktion, ein weiterer legt ohne Wirkung ab.
-    const rank = specialRank(view, legal);
-    return selection.kind === 'none' && rank !== null
-      ? { selection: { kind: 'special', rank }, action: null }
-      : done({ type: 'discardDrawn' });
+  const fits = (test: (a: Action) => boolean, action: Action): TapResult | null =>
+    has(legal, test) ? done(action) : null;
+  if (view.specialRank === 8 && tap.kind === 'own') {
+    return fits((a) => a.type === 'peekOwn' && a.slot === tap.slot, {
+      type: 'peekOwn',
+      slot: tap.slot,
+    });
   }
-  if (selection.kind === 'none' && tap.kind === 'own') {
-    return has(legal, (a) => a.type === 'keep' && a.slot === tap.slot)
-      ? done({ type: 'keep', slot: tap.slot })
-      : null;
-  }
-  if (selection.kind === 'special' && selection.rank === 8 && tap.kind === 'own') {
-    return has(legal, (a) => a.type === 'peekOwn' && a.slot === tap.slot)
-      ? done({ type: 'peekOwn', slot: tap.slot })
-      : null;
-  }
-  if (selection.kind === 'special' && selection.rank === 9 && tap.kind === 'opponent') {
+  if (view.specialRank === 9 && tap.kind === 'opponent') {
     const action: Action = { type: 'peekOpponent', target: tap.player, targetSlot: tap.slot };
-    return has(
-      legal,
+    return fits(
       (a) => a.type === 'peekOpponent' && a.target === tap.player && a.targetSlot === tap.slot,
-    )
-      ? done(action)
-      : null;
+      action,
+    );
   }
-  if (selection.kind === 'special' && selection.rank === 10 && tap.kind === 'own') {
-    return has(legal, (a) => a.type === 'blindSwap' && a.slot === tap.slot)
-      ? { selection: { kind: 'swap', slot: tap.slot }, action: null }
-      : null;
-  }
+  if (view.specialRank !== 10) return null;
   if (selection.kind === 'swap' && tap.kind === 'own' && tap.slot === selection.slot) {
-    return { selection: { kind: 'special', rank: 10 }, action: null };
+    return { selection: NO_SELECTION, action: null };
+  }
+  if (tap.kind === 'own' && has(legal, (a) => a.type === 'blindSwap' && a.slot === tap.slot)) {
+    return { selection: { kind: 'swap', slot: tap.slot }, action: null };
   }
   if (selection.kind === 'swap' && tap.kind === 'opponent') {
-    const fits = (a: Action): boolean =>
+    const action: Action = {
+      type: 'blindSwap',
+      slot: selection.slot,
+      target: tap.player,
+      targetSlot: tap.slot,
+    };
+    const test = (a: Action): boolean =>
       a.type === 'blindSwap' &&
       a.slot === selection.slot &&
       a.target === tap.player &&
       a.targetSlot === tap.slot;
-    return has(legal, fits)
-      ? done({ type: 'blindSwap', slot: selection.slot, target: tap.player, targetSlot: tap.slot })
-      : null;
+    return fits(test, action);
   }
   return null;
 }
@@ -130,7 +126,8 @@ export function resolveTap(
 ): TapResult | null {
   if (view.current !== HUMAN || view.viewer !== HUMAN) return null;
   if (view.phase === 'turnStart') return atTurnStart(legal, selection, tap);
-  if (view.phase === 'drawn') return afterDraw(view, legal, selection, tap);
+  if (view.phase === 'drawn') return afterDraw(legal, tap);
+  if (view.phase === 'special') return inSpecial(view, legal, selection, tap);
   return null;
 }
 
@@ -157,8 +154,11 @@ export function tappableKeys(
   );
 }
 
-/** Der einzige Knopf unten: Klopfen zu Beginn des Zuges, Abbrechen bei angehobener Karte. */
-export type MainButton = 'knock' | 'cancel' | null;
+/**
+ * Der einzige Knopf unten: Klopfen zu Beginn des Zuges, Abbrechen bei angehobener Karte, „Ohne
+ * Wirkung“ nach dem Ablegen einer 8, 9 oder 10.
+ */
+export type MainButton = 'knock' | 'cancel' | 'skip' | null;
 
 export function mainButton(
   view: PlayerView,
@@ -167,11 +167,7 @@ export function mainButton(
 ): MainButton {
   if (view.current !== HUMAN || view.phase === 'roundOver') return null;
   if (selection.kind === 'match' || selection.kind === 'swap') return 'cancel';
-  if (
-    selection.kind === 'none' &&
-    view.phase === 'turnStart' &&
-    has(legal, (a) => a.type === 'knock')
-  )
-    return 'knock';
+  if (view.phase === 'special' && has(legal, (a) => a.type === 'skipSpecial')) return 'skip';
+  if (view.phase === 'turnStart' && has(legal, (a) => a.type === 'knock')) return 'knock';
   return null;
 }

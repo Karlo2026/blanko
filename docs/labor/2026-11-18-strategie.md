@@ -31,6 +31,9 @@ eigene Handpunktzahl, wie der Bot sie sieht (unbekannte eigene Karten mit Erwart
 
 ## 2. Wann lohnt sich der 10-Tausch, und mit wem?
 
+> Stand vor der Hausregel-Änderung vom 19.11.2026 (Sonderkarten wirken seitdem bei jedem offenen
+> Ablegen). Die Aussagen zum 10-Tausch selbst bleiben gültig; neu messen mit `npm run lab -- analyze`.
+
 „Tauschen“ minus „die 10 einfach ablegen“, für Tausche gegen eine verdeckte Gegnerkarte:
 
 | eigene Karte | Ziel führt | Ziel führt nicht |

@@ -31,7 +31,10 @@ export function RulesPage({ onBack }: RulesPageProps) {
         </li>
       </ul>
       <h2>Sonderkarten</h2>
-      <p>Nur wenn frisch gezogen und direkt abgelegt:</p>
+      <p>
+        Immer wenn eine 8, 9 oder 10 offen abgelegt wird – frisch gezogen, beim Tauschen aus der
+        Hand oder als gleiche Karte:
+      </p>
       <table>
         <tbody>
           <tr>
@@ -48,7 +51,11 @@ export function RulesPage({ onBack }: RulesPageProps) {
           </tr>
         </tbody>
       </table>
-      <p className="muted">Ein zweiter Tipp auf die Ablage legt die Sonderkarte ohne Wirkung ab.</p>
+      <p className="muted">
+        Die Wirkung ist freiwillig: Nach dem Ablegen kannst du ein Ziel antippen oder „Ohne Wirkung“
+        wählen. Keine Wirkung hat eine 8, 9 oder 10, die du behältst oder die falsch abgelegt zurück
+        in die Hand geht.
+      </p>
       <h2>Wertung</h2>
       <p>
         Ass 1, 2 bis 10 nach Augenzahl, Bube, Dame und König 10. Gleiche Ränge zählen nur einmal:

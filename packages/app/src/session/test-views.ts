@@ -21,6 +21,7 @@ export function viewWith(view: Partial<PlayerView>): PlayerView {
     current: 0,
     phase: 'turnStart',
     drawnCard: null,
+    specialRank: null,
     hands: [fourHidden, fourHidden, fourHidden],
     drawPileSize: 30,
     discardPile: [cardFor(7)],

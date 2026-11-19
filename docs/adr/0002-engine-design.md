@@ -9,9 +9,11 @@
   hat inneren Zustand; das ist der bewusste Kompromiss zugunsten der Geschwindigkeit im Labor.
 - **Prüfung über `legalActions`:** `applyAction` lehnt alles ab, was nicht in `legalActions`
   steht. So gibt es genau eine Stelle, die festlegt, was erlaubt ist.
-- **Sonderkarten als eigene Aktionen** (`peekOwn`, `peekOpponent`, `blindSwap`) statt einer
-  Zwischenphase: Ablegen und Wirkung sind ein einziger Schritt. Das hält die Zustandsmaschine bei
-  drei Phasen (`turnStart`, `drawn`, `roundOver`).
+- **Sonderfunktion als eigene Phase `special`** (seit der Hausregel-Änderung vom 19.11.2026):
+  Nach jedem offenen Ablegen einer 8, 9 oder 10 – gezogen, beim Behalten oder per Gleiche-Karte-Zug –
+  folgt `peekOwn`, `peekOpponent`, `blindSwap` oder `skipSpecial`, erst dann endet der Zug
+  (`finishDiscard` in turn.ts). Vorher waren Ablegen und Wirkung eine einzige Aktion, weil die Wirkung
+  nur für die frisch gezogene Karte galt.
 - **Wissen hängt an der Karten-ID** und ist als Bitmaske pro Karte gespeichert. Bei Tauschen
   (Behalten, 10) wandert es dadurch automatisch mit. Neu gemischte Karten vergisst jeder.
 - **Die Engine speichert perfektes Gedächtnis.** Vergessen ist Sache der Bots (Profil

@@ -11,9 +11,12 @@ Verbindliche Quelle sind die Hausregeln aus dem Auftrag. Diese Seite fasst zusam
 - Ein Zug ist genau eines von: **Ziehen** (dann behalten gegen eine eigene Karte oder direkt
   ablegen), **Gleiche Karte ablegen** (Rang der zuvor abgeworfenen Karte), **Klopfen**.
 - Die oberste Ablagekarte darf nie genommen werden.
-- Sonderkarten wirken nur, wenn sie frisch gezogen und direkt abgelegt werden:
-  8 eigene Karte anschauen, 9 gegnerische Karte anschauen, 10 eigene Karte blind mit einer
-  gegnerischen tauschen.
+- Sonderkarten wirken bei **jedem offenen Ablegen** (Hausregel-Änderung vom 19.11.2026): frisch
+  gezogen und direkt abgelegt, beim Behalten aus der Hand abgelegt oder als gleiche Karte. 8 eigene
+  Karte anschauen, 9 gegnerische Karte anschauen, 10 eigene Karte blind mit einer gegnerischen
+  tauschen. Die Wirkung ist freiwillig. Keine Wirkung hat eine behaltene 8, 9 oder 10 und eine
+  falsch abgelegte, die zurück in die Hand geht.
+  Ursprünglich galt: nur frisch gezogen und direkt abgelegt.
 - Nach dem Klopfen hat jeder andere Spieler genau noch einen Zug. Die Karten des Klopfers
   bleiben unverändert.
 - Falsch abgelegt: Strafkarte vom Nachziehstapel, verdeckt und unbesehen.
@@ -30,19 +33,19 @@ Verbindliche Quelle sind die Hausregeln aus dem Auftrag. Diese Seite fasst zusam
 
 Alle Schalter stehen in [`packages/engine/src/rules.ts`](../packages/engine/src/rules.ts).
 
-| Nr. | Annahme                                                                                                    | Umsetzung                                 |
-| --- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| A1  | Plätze sind fest; abgelegte Plätze bleiben leer. Strafkarte auf den ersten freien Platz, sonst neue Reihe. | `penaltyFillsEmptySlot`                   |
-| A2  | Auf die aufgedeckte Startkarte darf keine gleiche Karte gelegt werden.                                     | `matchOnStartCard`                        |
-| A3  | Gleiche Karten bilden eine Kette.                                                                          | `matchChains`                             |
-| A4  | Eine per Gleiche-Karte-Zug abgelegte 8, 9 oder 10 löst nichts aus.                                         | folgt aus dem Datenmodell                 |
-| A5  | Falsch abgelegte Karte geht verdeckt zurück und ist danach allen bekannt.                                  | `failedMatchRevealsToAll`                 |
-| A6  | Kein 10-Tausch mit dem Klopfer; eine 9 darf seine Karten anschauen.                                        | `tenSwapWithKnocker`, `ninePeekAtKnocker` |
-| A7  | Ein Spieler ohne Karten hat 0 Punkte und spielt weiter.                                                    | folgt aus Wertung und Zügen               |
-| A8  | Beim Neumischen bleibt die oberste Ablagekarte liegen (auch für Strafkarten).                              | `reshuffleKeepsTopDiscard`                |
-| A9  | Klopfen ist ab dem ersten Zug erlaubt.                                                                     | `knockFromFirstTurn`                      |
-| A10 | Erster Geber zufällig, danach im Uhrzeigersinn.                                                            | `session.ts`                              |
-| A11 | Liefert auch Neumischen keine Karte mehr, endet die Runde sofort; eine fällige Strafkarte entfällt.        | `turn.ts`                                 |
+| Nr. | Annahme                                                                                                                       | Umsetzung                                 |
+| --- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| A1  | Plätze sind fest; abgelegte Plätze bleiben leer. Strafkarte auf den ersten freien Platz, sonst neue Reihe.                    | `penaltyFillsEmptySlot`                   |
+| A2  | Auf die aufgedeckte Startkarte darf keine gleiche Karte gelegt werden.                                                        | `matchOnStartCard`                        |
+| A3  | Gleiche Karten bilden eine Kette.                                                                                             | `matchChains`                             |
+| A4  | ~~Eine per Gleiche-Karte-Zug abgelegte 8, 9 oder 10 löst nichts aus.~~ Entfallen durch die Hausregel-Änderung vom 19.11.2026. | –                                         |
+| A5  | Falsch abgelegte Karte geht verdeckt zurück und ist danach allen bekannt.                                                     | `failedMatchRevealsToAll`                 |
+| A6  | Kein 10-Tausch mit dem Klopfer; eine 9 darf seine Karten anschauen.                                                           | `tenSwapWithKnocker`, `ninePeekAtKnocker` |
+| A7  | Ein Spieler ohne Karten hat 0 Punkte und spielt weiter.                                                                       | folgt aus Wertung und Zügen               |
+| A8  | Beim Neumischen bleibt die oberste Ablagekarte liegen (auch für Strafkarten).                                                 | `reshuffleKeepsTopDiscard`                |
+| A9  | Klopfen ist ab dem ersten Zug erlaubt.                                                                                        | `knockFromFirstTurn`                      |
+| A10 | Erster Geber zufällig, danach im Uhrzeigersinn.                                                                               | `session.ts`                              |
+| A11 | Liefert auch Neumischen keine Karte mehr, endet die Runde sofort; eine fällige Strafkarte entfällt.                           | `turn.ts`                                 |
 
 ## Auslegungen
 
