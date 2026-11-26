@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "start": "node src/main.ts",
     "test": "vitest run",
     "lint": "eslint .",
     "typecheck": "tsc -p ."
@@ -11,6 +12,11 @@
   "dependencies": {
     "@blanko/bots": "*",
     "@blanko/engine": "*",
-    "@blanko/protocol": "*"
+    "@blanko/protocol": "*",
+    "ws": "^8.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.4",
+    "@types/ws": "^8.18.2"
   }
 }

@@ -19,6 +19,7 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "knip": "knip",
     "lab": "node packages/lab/src/main.ts",
+    "server": "node packages/server/src/main.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm test && npm run knip"

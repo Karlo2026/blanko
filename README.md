@@ -109,6 +109,12 @@ und veröffentlicht neu (`.github/workflows/pages.yml`).
 Zum Ausprobieren am Mac: `npm run dev -w @blanko/app` (Entwicklung) oder
 `npm run build -w @blanko/app && npm run preview -w @blanko/app` (mit Service Worker).
 
+## Mehrspieler-Server
+
+`npm run server` startet den Server lokal auf Port 10000 (oder `PORT`). Er antwortet auf
+`GET /health` mit `ok` und nimmt WebSocket-Verbindungen nur von `https://karlo2026.github.io` und
+`localhost` an. Räume liegen im Speicher; ein Neustart verliert sie.
+
 ## Aufbau
 
 ```
@@ -116,10 +122,13 @@ blanko/
 ├─ packages/
 │  ├─ engine/   Regeln, Spielzustand, Wertung – keine Abhängigkeiten, nur reine Funktionen
 │  ├─ bots/     Bot-Schnittstelle, Wissensmodell, RuleBot, IsmctsBot, Bot-Profile
+│  ├─ protocol/ Nachrichten zwischen App und Server samt Prüfung
 │  ├─ lab/      Kommandozeilen-Werkzeug zum Simulieren auf dem Mac (Node)
+│  ├─ server/   Mehrspieler-Server: Räume, WebSocket, Bot-Worker (Node)
 │  └─ app/      PWA fürs iPhone (Vite + React)
 └─ docs/        Regeln, Architekturentscheidungen, Ergebnisse aus dem Labor
 ```
 
-Abhängigkeiten zeigen nur nach innen: `app → bots → engine` und `lab → bots → engine`.
+Abhängigkeiten zeigen nur nach innen: `app → bots → engine`, `lab → bots → engine` und
+`server → protocol → bots → engine`; die App nutzt `protocol` für den Online-Modus.
 Architekturentscheidungen stehen in [`docs/adr/`](docs/adr/).
