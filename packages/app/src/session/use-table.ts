@@ -1,4 +1,4 @@
-import { freshMemory, recall, updateMemory, type Memory } from '@blanko/bots';
+import { freshMemory, recall, rememberAll, type Memory } from '@blanko/bots';
 import {
   applyAction,
   getPlayerView,
@@ -103,12 +103,13 @@ export function useTable(
   const perform = (action: Action, selection: Selection): void => {
     const current = tableRef.current;
     const { state, events } = applyAction(current.game, action, rng);
-    const memories = current.memories.map((memory, player) => {
-      const forgetRate = player === HUMAN ? 0 : session.profile.forgetRate;
-      return forgetRate === 0
-        ? memory
-        : updateMemory(memory, events, getPlayerView(state, player), forgetRate, rng);
-    });
+    const memories = rememberAll(
+      current.memories,
+      events,
+      state,
+      (player) => (player === HUMAN ? 0 : session.profile.forgetRate),
+      rng,
+    );
     const score = state.phase.kind === 'roundOver' ? scoreRound(state, rng) : null;
     const reveal = current.game.current === HUMAN ? revealOf(action) : null;
     const move = moveText(events, session.names);

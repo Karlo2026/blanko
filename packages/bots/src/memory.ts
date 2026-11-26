@@ -1,4 +1,12 @@
-import type { CardId, GameEvent, PlayerView, Rng, SlotView } from '@blanko/engine';
+import {
+  getPlayerView,
+  type CardId,
+  type GameEvent,
+  type GameState,
+  type PlayerView,
+  type Rng,
+  type SlotView,
+} from '@blanko/engine';
 
 /**
  * Gedächtnis eines Bots. Die Engine merkt sich alles perfekt; hier wird festgehalten,
@@ -73,4 +81,23 @@ export function recall(view: PlayerView, memory: Memory): PlayerView {
   const mask = (slot: SlotView): SlotView =>
     slot.kind === 'known' && memory.forgotten.has(slot.card.id) ? { kind: 'hidden' } : slot;
   return { ...view, hands: view.hands.map((hand) => hand.map(mask)) };
+}
+
+/**
+ * Aktualisiert das Gedächtnis aller Plätze nach einer Aktion. Plätze ohne Vergessen (Menschen,
+ * Rate 0) bleiben unverändert, weil ihr Gedächtnis sich nie ändert.
+ */
+export function rememberAll(
+  memories: readonly Memory[],
+  events: readonly GameEvent[],
+  state: GameState,
+  forgetRateOf: (player: number) => number,
+  rng: Rng,
+): readonly Memory[] {
+  return memories.map((memory, player) => {
+    const forgetRate = forgetRateOf(player);
+    return forgetRate === 0
+      ? memory
+      : updateMemory(memory, events, getPlayerView(state, player), forgetRate, rng);
+  });
 }

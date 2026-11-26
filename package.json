@@ -5,7 +5,9 @@
   "workspaces": [
     "packages/engine",
     "packages/bots",
+    "packages/protocol",
     "packages/lab",
+    "packages/server",
     "packages/app"
   ],
   "engines": {

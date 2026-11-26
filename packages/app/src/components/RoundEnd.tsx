@@ -48,7 +48,7 @@ export function RoundEnd({
               </td>
               <td className="num">{score.handPoints[player]}</td>
               <td className="num">{signed(score.placementPoints[player] ?? 0)}</td>
-              <td className="num">{signed(session.totals[player] ?? 0)}</td>
+              <td className="num">{signed(session.board.totals[player] ?? 0)}</td>
             </tr>
           ))}
         </tbody>

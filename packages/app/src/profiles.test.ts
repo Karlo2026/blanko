@@ -2,13 +2,13 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createRng, scoreRound } from '@blanko/engine';
 import { describe, expect, it } from 'vitest';
-import { parseAppProfiles } from './profiles.ts';
+import { parseProfileFile } from '@blanko/bots';
 import { completeRound, createSession, startSessionRound, statsKey } from './session/session.ts';
 
 const exported: unknown = JSON.parse(
   readFileSync(join(import.meta.dirname, '..', 'public', 'profiles.json'), 'utf8'),
 );
-const profiles = parseAppProfiles(exported);
+const profiles = parseProfileFile(exported);
 
 describe('profiles.json aus dem Labor', () => {
   it('enthält die fünf Stufen mit aufsteigender Wertung', () => {
@@ -37,7 +37,7 @@ describe('profiles.json aus dem Labor', () => {
   });
 
   it('lehnt unvollständige Daten ab', () => {
-    expect(() => parseAppProfiles({ levels: [] })).toThrow('fehlen');
+    expect(() => parseProfileFile({ levels: [] })).toThrow('ladder');
   });
 });
 
@@ -52,9 +52,9 @@ describe('Sitzung', () => {
     const score = scoreRound(startSessionRound(session, rng), rng);
     const nextProfile = profiles.ladder.at(-1) ?? level.profile;
     const next = completeRound(session, score, nextProfile);
-    expect(next.totals).toEqual(score.placementPoints);
-    expect(next.round).toBe(2);
-    expect(next.dealer).toBe((session.dealer + 1) % 3);
+    expect(next.board.totals).toEqual(score.placementPoints);
+    expect(next.board.round).toBe(2);
+    expect(next.board.dealer).toBe((session.board.dealer + 1) % 3);
     expect(next.profile).toBe(nextProfile);
   });
 

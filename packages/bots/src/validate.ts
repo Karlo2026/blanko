@@ -33,3 +33,16 @@ export function expectNumberList(value: unknown, path: string, length: number): 
   }
   return value.map((item, index) => expectNumber(item, `${path}[${String(index)}]`));
 }
+
+export function expectList(value: unknown, path: string): unknown[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new ValidationError(`${path}: nicht leere Liste erwartet`);
+  }
+  return value;
+}
+
+export function expectInteger(value: unknown, path: string, min: number, max: number): number {
+  const number = expectNumber(value, path, min, max);
+  if (!Number.isInteger(number)) throw new ValidationError(`${path}: ganze Zahl erwartet`);
+  return number;
+}

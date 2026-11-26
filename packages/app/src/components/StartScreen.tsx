@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Level } from '../profiles.ts';
+import type { Level } from '@blanko/bots';
 import { nearestLevel } from '../session/rating.ts';
 import { MAX_BOTS, type SessionMode } from '../session/session.ts';
 import type { Tempo } from '../session/tempo.ts';

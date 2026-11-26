@@ -1,6 +1,5 @@
-import type { BotProfile } from '@blanko/bots';
+import type { BotProfile, BotRequest, BotResponse } from '@blanko/bots';
 import type { Action, PlayerView } from '@blanko/engine';
-import type { BotRequest, BotResponse } from './bot-protocol.ts';
 
 /** Schmale Promise-Schnittstelle zum Bot-Worker. */
 export class BotClient {

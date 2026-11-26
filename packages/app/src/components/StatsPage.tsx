@@ -1,4 +1,4 @@
-import type { Level } from '../profiles.ts';
+import type { Level } from '@blanko/bots';
 import type { Stats } from '../session/stats.ts';
 
 interface StatsPageProps {

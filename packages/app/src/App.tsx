@@ -4,7 +4,8 @@ import { Menu } from './components/Menu.tsx';
 import { RulesPage } from './components/RulesPage.tsx';
 import { StartScreen } from './components/StartScreen.tsx';
 import { StatsPage } from './components/StatsPage.tsx';
-import { loadAppProfiles, type AppProfiles } from './profiles.ts';
+import type { ProfileFile } from '@blanko/bots';
+import { loadAppProfiles } from './profiles.ts';
 import { initialRating, loadRating, saveRating, type PlayerRating } from './session/rating.ts';
 import type { SessionMode } from './session/session.ts';
 import { loadTempo, saveTempo, type Tempo } from './session/tempo.ts';
@@ -19,7 +20,7 @@ interface Game {
 type Overlay = 'menu' | 'rules' | 'stats' | null;
 
 interface Loaded {
-  readonly profiles: AppProfiles;
+  readonly profiles: ProfileFile;
   readonly rating: PlayerRating;
 }
 

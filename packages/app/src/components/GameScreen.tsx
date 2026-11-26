@@ -68,7 +68,7 @@ export function GameScreen(props: GameScreenProps) {
 
   const nextRound = (): void => {
     setRound({
-      number: session.round,
+      number: session.board.round,
       start: startSessionRound(session, rng),
       ratingBefore: rating.rating,
     });
@@ -87,7 +87,7 @@ export function GameScreen(props: GameScreenProps) {
           Menü
         </button>
       </header>
-      <ScoreSheet names={session.names} totals={session.totals} />
+      <ScoreSheet names={session.names} totals={session.board.totals} />
       <RoundTable
         key={round.number}
         session={session}

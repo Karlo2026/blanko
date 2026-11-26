@@ -17,7 +17,14 @@ export { createRng, type Rng } from './rng.ts';
 export { shuffle } from './shuffle.ts';
 export { RULES, type RuleOptions } from './rules.ts';
 export { handPoints, placementPointsByPlace, scoreRound, type RoundScore } from './scoring.ts';
-export { addRoundToTotals, chooseFirstDealer, nextDealer } from './session.ts';
+export {
+  addRoundToTotals,
+  chooseFirstDealer,
+  newScoreboard,
+  nextDealer,
+  recordRound,
+  type Scoreboard,
+} from './session.ts';
 export { MAX_PLAYERS, MIN_PLAYERS, startRound } from './setup.ts';
 export type { GameState, Hand, PlayerId, Slot } from './state.ts';
 export type { ActionResult } from './turn.ts';

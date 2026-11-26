@@ -19,3 +19,28 @@ export function addRoundToTotals(
 ): readonly number[] {
   return totals.map((total, player) => total + at(placementPoints, player));
 }
+
+/** Spielstand einer Sitzung: Summe der Platzierungspunkte, Nummer der nächsten Runde, Geber. */
+export interface Scoreboard {
+  readonly totals: readonly number[];
+  /** Nummer der laufenden bzw. nächsten Runde, beginnend bei 1. */
+  readonly round: number;
+  readonly dealer: PlayerId;
+}
+
+export function newScoreboard(playerCount: number, rng: Rng): Scoreboard {
+  return {
+    totals: Array.from({ length: playerCount }, () => 0),
+    round: 1,
+    dealer: chooseFirstDealer(playerCount, rng),
+  };
+}
+
+/** Bucht eine gewertete Runde: Punkte summieren, nächste Runde, Geber im Uhrzeigersinn weiter. */
+export function recordRound(board: Scoreboard, placementPoints: readonly number[]): Scoreboard {
+  return {
+    totals: addRoundToTotals(board.totals, placementPoints),
+    round: board.round + 1,
+    dealer: nextDealer(board.dealer, board.totals.length),
+  };
+}

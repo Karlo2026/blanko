@@ -1,6 +1,6 @@
 import type { BotProfile } from '@blanko/bots';
 import { placementPointsByPlace, type RoundScore } from '@blanko/engine';
-import type { Level } from '../profiles.ts';
+import type { Level } from '@blanko/bots';
 import { HUMAN } from './session.ts';
 
 /**
