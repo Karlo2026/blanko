@@ -1,6 +1,5 @@
 import type { PlayerView } from '@blanko/engine';
 import { tapKey, type Tap } from '../session/interaction.ts';
-import { HUMAN } from '../session/session.ts';
 import { CardView, type CardFace } from './CardView.tsx';
 
 interface PilesProps {
@@ -33,7 +32,7 @@ export function Piles({ view, tappable, landing, onTap }: PilesProps) {
               size="pile"
               anchor="drawn"
               landing={landing.has('drawn')}
-              label={view.current === HUMAN ? 'Gezogene Karte' : 'Gezogene Karte des Gegners'}
+              label={view.current === view.viewer ? 'Gezogene Karte' : 'Gezogene Karte des Gegners'}
             />
           )}
         </div>

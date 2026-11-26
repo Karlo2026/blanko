@@ -1,6 +1,5 @@
 import type { GameEvent, PlayerView } from '@blanko/engine';
 import type { CardFace } from '../components/CardView.tsx';
-import { HUMAN } from './session.ts';
 
 /** Stelle am Tisch, an der eine Karte startet oder landet. */
 export type Anchor =
@@ -30,7 +29,7 @@ const slot = (player: number, index: number): Anchor => ({ kind: 'slot', player,
 /**
  * Welche Karten sich bei diesen Ereignissen sichtbar bewegen. Gesehen wird wie am echten Tisch:
  * Die eigene gezogene Karte offen, gezogene Karten der Gegner verdeckt, Abgelegtes offen.
- * `before` ist die Sicht des Menschen vor der Aktion, `after` danach. Folgebewegungen (Strafkarte
+ * `before` ist die eigene Sicht vor der Aktion, `after` danach. Folgebewegungen (Strafkarte
  * nach falschem Ablegen) starten jeweils nach einer Flugdauer `flightMs`.
  */
 export function flightsFor(
@@ -50,7 +49,7 @@ export function flightsFor(
       case 'reshuffled':
         return [now({ kind: 'discardPile' }, { kind: 'drawPile' }, BACK)];
       case 'drew': {
-        const card = event.player === HUMAN ? after.drawnCard : null;
+        const card = event.player === after.viewer ? after.drawnCard : null;
         return [
           now(
             { kind: 'drawPile' },
@@ -60,7 +59,7 @@ export function flightsFor(
         ];
       }
       case 'kept': {
-        const card = event.player === HUMAN ? before.drawnCard : null;
+        const card = event.player === before.viewer ? before.drawnCard : null;
         return [
           now(
             { kind: 'drawn' },

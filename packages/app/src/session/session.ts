@@ -10,7 +10,7 @@ import {
 } from '@blanko/engine';
 
 /** Im Einzelspielermodus sitzt der Mensch immer auf Platz 0, die Bots folgen im Uhrzeigersinn. */
-export const HUMAN = 0;
+export const LOCAL_SEAT = 0;
 /** Bis zu fünf Bots, also höchstens sechs Spieler am Tisch. */
 export const MAX_BOTS = 5;
 

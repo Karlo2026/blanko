@@ -12,6 +12,8 @@ interface StartScreenProps {
   readonly tempo: Tempo;
   readonly onTempo: (tempo: Tempo) => void;
   readonly onStart: (mode: SessionMode, botCount: number) => void;
+  /** Null, wenn kein Mehrspieler-Server eingerichtet ist. */
+  readonly onOnline: (() => void) | null;
   readonly onRules: () => void;
   readonly onStats: () => void;
 }
@@ -26,6 +28,7 @@ export function StartScreen({
   tempo,
   onTempo,
   onStart,
+  onOnline,
   onRules,
   onStats,
 }: StartScreenProps) {
@@ -102,6 +105,11 @@ export function StartScreen({
         <button type="button" className="text-button" onClick={onStats}>
           Statistik
         </button>
+        {onOnline === null ? null : (
+          <button type="button" className="text-button" onClick={onOnline}>
+            Online spielen
+          </button>
+        )}
       </div>
       <div className="main-button-area">
         <button

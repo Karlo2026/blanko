@@ -1,9 +1,9 @@
+import { signed } from '../session/display.ts';
+
 interface ScoreSheetProps {
   readonly names: readonly string[];
   readonly totals: readonly number[];
 }
-
-const signed = (value: number): string => (value > 0 ? `+${String(value)}` : String(value));
 
 /** Punktezettel aus Karopapier mit den Sitzungspunkten aller Spieler. */
 export function ScoreSheet({ names, totals }: ScoreSheetProps) {

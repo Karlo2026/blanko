@@ -1,5 +1,4 @@
 import type { Action, PlayerView } from '@blanko/engine';
-import { HUMAN } from './session.ts';
 
 /**
  * Was der Mensch gerade ausgewählt hat. Die Oberfläche kennt nur Antippen; erst wenn eine
@@ -123,7 +122,7 @@ export function resolveTap(
   selection: Selection,
   tap: Tap,
 ): TapResult | null {
-  if (view.current !== HUMAN || view.viewer !== HUMAN) return null;
+  if (view.current !== view.viewer) return null;
   if (view.phase === 'turnStart') return atTurnStart(legal, selection, tap);
   if (view.phase === 'drawn') return afterDraw(legal, tap);
   if (view.phase === 'special') return inSpecial(view, legal, selection, tap);
@@ -134,7 +133,9 @@ function allTaps(view: PlayerView): Tap[] {
   const taps: Tap[] = [{ kind: 'drawPile' }, { kind: 'discardPile' }];
   view.hands.forEach((hand, player) => {
     hand.forEach((_, slot) => {
-      taps.push(player === HUMAN ? { kind: 'own', slot } : { kind: 'opponent', player, slot });
+      taps.push(
+        player === view.viewer ? { kind: 'own', slot } : { kind: 'opponent', player, slot },
+      );
     });
   });
   return taps;
@@ -163,7 +164,7 @@ export function mainButton(
   legal: readonly Action[],
   selection: Selection,
 ): MainButton {
-  if (view.current !== HUMAN || view.phase === 'roundOver') return null;
+  if (view.current !== view.viewer || view.phase === 'roundOver') return null;
   if (selection.kind === 'match' || selection.kind === 'swap') return 'cancel';
   if (view.phase === 'turnStart' && has(legal, (a) => a.type === 'knock')) return 'knock';
   return null;

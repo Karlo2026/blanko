@@ -1,17 +1,20 @@
 import type { BotProfile } from '@blanko/bots';
-import { createRng, type GameState, type RoundScore } from '@blanko/engine';
+import { createRng, type GameState, type RoundScore, type Rng } from '@blanko/engine';
 import { useRef, useState } from 'react';
+import { signed } from '../session/display.ts';
 import { chooseOpponent, updateRating, type PlayerRating } from '../session/rating.ts';
 import {
   completeRound,
   createSession,
-  HUMAN,
+  LOCAL_SEAT,
   startSessionRound,
   statsKey,
   type Session,
   type SessionMode,
 } from '../session/session.ts';
 import type { Tempo } from '../session/tempo.ts';
+import { useLocalTable } from '../session/use-local-table.ts';
+import { RoundEnd } from './RoundEnd.tsx';
 import { RoundTable } from './RoundTable.tsx';
 import { ScoreSheet } from './ScoreSheet.tsx';
 
@@ -43,6 +46,44 @@ function profileFor(
   return mode.kind === 'fixed' ? mode.level.profile : chooseOpponent(ladder, rating, playerCount);
 }
 
+const NOBODY_OFFLINE: ReadonlySet<number> = new Set();
+
+interface LocalRoundProps {
+  readonly session: Session;
+  readonly start: GameState;
+  readonly rng: Rng;
+  readonly tempo: Tempo;
+  readonly ratingChange: number;
+  readonly nextOpponentRating: number | null;
+  readonly onScored: (score: RoundScore) => void;
+  readonly onNextRound: () => void;
+  readonly onEndSession: () => void;
+}
+
+/** Eine Runde gegen die Bots im Browser. */
+function LocalRound(props: LocalRoundProps) {
+  const { session, start, rng, tempo, ratingChange, nextOpponentRating } = props;
+  const table = useLocalTable(session, start, rng, tempo, props.onScored);
+  const next =
+    nextOpponentRating === null ? '' : ` · nächste Gegner: Stärke ${String(nextOpponentRating)}`;
+  return (
+    <>
+      <RoundTable table={table} offline={NOBODY_OFFLINE} />
+      {table.score !== null && !table.busy ? (
+        <RoundEnd
+          names={session.names}
+          totals={session.board.totals}
+          score={table.score}
+          knocker={table.view.knocker}
+          note={`Deine Stärke ${signed(Math.round(ratingChange))}${next}`}
+          onNext={props.onNextRound}
+          onEnd={props.onEndSession}
+        />
+      ) : null}
+    </>
+  );
+}
+
 /** Eine Sitzung aus beliebig vielen Runden; die Platzierungspunkte werden aufsummiert. */
 export function GameScreen(props: GameScreenProps) {
   const { mode, botCount, tempo, ladder, rating, onRatingChange, onRoundScored, onMenu, onEnd } =
@@ -63,7 +104,11 @@ export function GameScreen(props: GameScreenProps) {
     setSession((current) =>
       completeRound(current, score, profileFor(mode, ladder, next.rating, current.names.length)),
     );
-    onRoundScored(statsKey(mode), score.placementPoints[HUMAN] ?? 0, score.ranking[0] === HUMAN);
+    onRoundScored(
+      statsKey(mode),
+      score.placementPoints[LOCAL_SEAT] ?? 0,
+      score.ranking[0] === LOCAL_SEAT,
+    );
   };
 
   const nextRound = (): void => {
@@ -88,7 +133,7 @@ export function GameScreen(props: GameScreenProps) {
         </button>
       </header>
       <ScoreSheet names={session.names} totals={session.board.totals} />
-      <RoundTable
+      <LocalRound
         key={round.number}
         session={session}
         start={round.start}

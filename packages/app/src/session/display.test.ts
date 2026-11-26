@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { faceFor, seatPositions } from './display.ts';
+import { faceFor, opponentOrder, seatPositions } from './display.ts';
 import { hidden, known, viewWith } from './test-views.ts';
 
 describe('Sitzordnung', () => {
@@ -7,6 +7,14 @@ describe('Sitzordnung', () => {
     expect(seatPositions(1)).toEqual(['top']);
     expect(seatPositions(3)).toEqual(['left', 'top', 'right']);
     expect(seatPositions(5)).toEqual(['left', 'top-left', 'top', 'top-right', 'right']);
+  });
+});
+
+describe('gedrehter Tisch', () => {
+  it('setzt den eigenen Platz unten, die Gegner im Uhrzeigersinn ab dem nächsten Platz', () => {
+    expect(opponentOrder(0, 4)).toEqual([1, 2, 3]);
+    expect(opponentOrder(2, 4)).toEqual([3, 0, 1]);
+    expect(opponentOrder(1, 2)).toEqual([0]);
   });
 });
 
@@ -22,6 +30,12 @@ describe('faceFor', () => {
     const view = viewWith({ hands });
     expect(faceFor(view, 1, 0, null).kind).toBe('back');
     expect(faceFor(view, 1, 0, { player: 1, slot: 0 }).kind).toBe('face');
+  });
+
+  it('zeigt auch auf einem anderen eigenen Platz die Startkarten', () => {
+    const view = viewWith({ hands, viewer: 1, canStillPeek: true });
+    expect(faceFor(view, 1, 0, null).kind).toBe('face');
+    expect(faceFor(view, 0, 0, null).kind).toBe('back');
   });
 
   it('deckt am Rundenende auf', () => {

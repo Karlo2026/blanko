@@ -1,10 +1,9 @@
 import type { PlayerView } from '@blanko/engine';
 import type { CardFace } from '../components/CardView.tsx';
-import { HUMAN } from './session.ts';
 
 export type SeatPosition = 'top-left' | 'top' | 'top-right' | 'left' | 'right';
 
-/** Gegner im Uhrzeigersinn ab links vom Menschen; bei 5 oder 6 Spielern auch oben links und rechts. */
+/** Gegner im Uhrzeigersinn ab links vom eigenen Platz; bei 5 oder 6 Spielern auch oben links und rechts. */
 const POSITIONS: Readonly<Record<number, readonly SeatPosition[]>> = {
   1: ['top'],
   2: ['left', 'right'],
@@ -12,6 +11,14 @@ const POSITIONS: Readonly<Record<number, readonly SeatPosition[]>> = {
   4: ['left', 'top-left', 'top-right', 'right'],
   5: ['left', 'top-left', 'top', 'top-right', 'right'],
 };
+
+/** Der Tisch ist gedreht: Der eigene Platz ist unten, die Gegner folgen im Uhrzeigersinn. */
+export function opponentOrder(viewer: number, playerCount: number): number[] {
+  return Array.from({ length: playerCount - 1 }, (_, i) => (viewer + 1 + i) % playerCount);
+}
+
+/** Punkte mit Vorzeichen, etwa „+2“ oder „-1“. */
+export const signed = (value: number): string => (value > 0 ? `+${String(value)}` : String(value));
 
 export function seatPositions(opponents: number): readonly SeatPosition[] {
   const positions = POSITIONS[opponents];
@@ -34,7 +41,7 @@ export function faceFor(
   if (seen === undefined || seen.kind === 'empty') return { kind: 'empty' };
   if (seen.kind === 'hidden') return { kind: 'back' };
   const peeked = reveal !== null && reveal.player === player && reveal.slot === slot;
-  const ownAtStart = player === HUMAN && view.canStillPeek;
+  const ownAtStart = player === view.viewer && view.canStillPeek;
   return view.phase === 'roundOver' || peeked || ownAtStart
     ? { kind: 'face', card: seen.card }
     : { kind: 'back' };

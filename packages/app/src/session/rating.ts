@@ -1,10 +1,10 @@
 import type { BotProfile } from '@blanko/bots';
 import { placementPointsByPlace, type RoundScore } from '@blanko/engine';
 import type { Level } from '@blanko/bots';
-import { HUMAN } from './session.ts';
+import { LOCAL_SEAT } from './session.ts';
 
 /**
- * Elo-Wertung des Menschen für den dynamischen Modus. Sie liegt auf derselben Skala wie die im
+ * Elo-Wertung des Menschen für den dynamischen Modus; nur im Einzelspielermodus. Sie liegt auf derselben Skala wie die im
  * Labor gemessenen Bot-Wertungen (400 Punkte Abstand ≙ 10:1 im Zweikampf).
  */
 export interface PlayerRating {
@@ -31,12 +31,12 @@ export function updateRating(
   opponentRating: number,
 ): PlayerRating {
   const opponents = score.ranking.length - 1;
-  const humanPlace = score.ranking.indexOf(HUMAN);
+  const humanPlace = score.ranking.indexOf(LOCAL_SEAT);
   const k = (current.rounds < PROVISIONAL_ROUNDS ? 2 * ROUND_K : ROUND_K) / opponents;
   const expected = winProbability(current.rating, opponentRating);
   let change = 0;
   score.ranking.forEach((player, place) => {
-    if (player === HUMAN) return;
+    if (player === LOCAL_SEAT) return;
     const won = humanPlace < place ? 1 : 0;
     change += k * (won - expected);
   });

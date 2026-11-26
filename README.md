@@ -115,6 +115,25 @@ Zum Ausprobieren am Mac: `npm run dev -w @blanko/app` (Entwicklung) oder
 `GET /health` mit `ok` und nimmt WebSocket-Verbindungen nur von `https://karlo2026.github.io` und
 `localhost` an. Räume liegen im Speicher; ein Neustart verliert sie.
 
+Mit zwei Browser-Tabs testen:
+
+1. Server starten: `npm run server`
+2. In einem zweiten Terminal die App mit Server-Adresse starten:
+   `VITE_SERVER_URL=ws://localhost:10000 npm run dev -w @blanko/app`
+3. Tab 1: http://localhost:5173 → „Online spielen“, Namen eingeben, „Raum erstellen“.
+4. „Link teilen“ kopiert den Einladungslink (…/?raum=CODE). In Tab 2 öffnen, anderen Namen
+   eingeben, „Beitreten“.
+5. In Tab 1 Bots dazusetzen, Stufe wählen, „Spiel starten“. Jeder Tab sieht nur die eigenen
+   Karten; den Tisch sieht jeder von seinem Platz aus.
+6. Einen Tab schließen: Der andere zeigt „ist offline“. Wieder öffnen, „Online spielen“ →
+   „Zurück an den Tisch“ setzt auf denselben Platz.
+
+Beide Tabs teilen sich den Browser-Speicher; „Zurück an den Tisch“ kennt daher nur den zuletzt
+betretenen Platz. Für zwei ganz getrennte Spieler ein privates Fenster nehmen.
+
+Ohne `VITE_SERVER_URL` gibt es kein „Online spielen“; der Einzelspielermodus bleibt unverändert
+und offline nutzbar.
+
 ## Aufbau
 
 ```

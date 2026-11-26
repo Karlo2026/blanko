@@ -26,6 +26,12 @@ describe('flightsFor', () => {
     expect(flightsFor([{ type: 'drew', player: 1 }], after, after, FLIGHT_MS)[0]?.face).toEqual({
       kind: 'back',
     });
+    // Online sitzt man auch auf anderen Plätzen.
+    const seated = viewWith({ viewer: 1, current: 1, phase: 'drawn', drawnCard: cardFor(5) });
+    expect(
+      flightsFor([{ type: 'drew', player: 1 }], viewWith({ viewer: 1 }), seated, FLIGHT_MS)[0]
+        ?.face,
+    ).toEqual({ kind: 'face', card: cardFor(5) });
   });
 
   it('bewegt beim Behalten die gezogene Karte in die Hand und die alte auf die Ablage', () => {

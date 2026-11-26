@@ -59,6 +59,19 @@ describe('Zugbeginn', () => {
     expect(resolveTap(waiting, legal, NO_SELECTION, { kind: 'drawPile' })).toBeNull();
     expect(mainButton(waiting, legal, NO_SELECTION)).toBeNull();
   });
+
+  it('nimmt online den eigenen Platz aus der Sicht, nicht Platz 0', () => {
+    const online = viewWith({ viewer: 2, current: 2, matchableRank: 7 });
+    expect(resolveTap(online, legal, NO_SELECTION, { kind: 'drawPile' })?.action).toEqual({
+      type: 'draw',
+    });
+    expect(mainButton(online, legal, NO_SELECTION)).toBe('knock');
+    const keys = tappableKeys(online, legal, NO_SELECTION);
+    expect(keys.has('own:0')).toBe(true);
+    expect(keys.has('opponent:0:0')).toBe(false);
+    const othersTurn = viewWith({ viewer: 2, current: 0 });
+    expect(resolveTap(othersTurn, legal, NO_SELECTION, { kind: 'drawPile' })).toBeNull();
+  });
 });
 
 describe('Nach dem Ziehen', () => {

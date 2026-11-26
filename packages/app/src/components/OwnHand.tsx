@@ -1,7 +1,6 @@
 import type { PlayerView } from '@blanko/engine';
 import { faceFor } from '../session/display.ts';
 import { tapKey, type Selection, type Tap } from '../session/interaction.ts';
-import { HUMAN } from '../session/session.ts';
 import { CardView } from './CardView.tsx';
 
 interface OwnHandProps {
@@ -29,7 +28,8 @@ export function OwnHand({
   reveal,
   onTap,
 }: OwnHandProps) {
-  const hand = view.hands[HUMAN] ?? [];
+  const own = view.viewer;
+  const hand = view.hands[own] ?? [];
   return (
     <div className="hand own">
       {hand.map((_, slot) => {
@@ -37,14 +37,14 @@ export function OwnHand({
         return (
           <CardView
             key={slot}
-            face={faceFor(view, HUMAN, slot, reveal)}
+            face={faceFor(view, own, slot, reveal)}
             size="hand"
             label={`Deine Karte ${String(slot + 1)}`}
             tappable={tappable.has(tapKey(tap))}
             selected={isSelected(selection, slot)}
-            changed={changed.has(`${String(HUMAN)}:${String(slot)}`)}
-            anchor={`slot:${String(HUMAN)}:${String(slot)}`}
-            landing={landing.has(`slot:${String(HUMAN)}:${String(slot)}`)}
+            changed={changed.has(`${String(own)}:${String(slot)}`)}
+            anchor={`slot:${String(own)}:${String(slot)}`}
+            landing={landing.has(`slot:${String(own)}:${String(slot)}`)}
             onTap={() => {
               onTap(tap);
             }}

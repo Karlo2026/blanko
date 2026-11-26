@@ -4,6 +4,8 @@ import type { Action, GameEvent, PlayerView, RoundScore } from '@blanko/engine';
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 export const ROOM_CODE_LENGTH = 4;
 export const MAX_NAME_LENGTH = 16;
+/** WebSocket-Schließcode: Der Server hat die Verbindung absichtlich beendet, nicht neu verbinden. */
+export const CLOSE_NO_RETRY = 4000;
 
 /** Nachrichten vom Browser an den Server. */
 export type ClientMessage =

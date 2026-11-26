@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
 import { parseProfileFile } from '@blanko/bots';
-import type { ServerMessage } from '@blanko/protocol';
+import { CLOSE_NO_RETRY, type ServerMessage } from '@blanko/protocol';
 import { WebSocketServer } from 'ws';
 import { createBotPool } from './bot-pool.ts';
 import { Hub } from './hub.ts';
@@ -61,7 +61,7 @@ server.on('upgrade', (request, socket, head) => {
         ws.send(JSON.stringify(message));
       },
       close: () => {
-        ws.close();
+        ws.close(CLOSE_NO_RETRY);
       },
     });
     ws.on('message', (data, isBinary) => {

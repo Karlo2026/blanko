@@ -14,6 +14,8 @@ interface OpponentProps {
   /** Anker, auf denen gerade eine Karte landet (siehe flights.ts). */
   readonly landing: ReadonlySet<string>;
   readonly reveal: { readonly player: number; readonly slot: number } | null;
+  /** Online: Der Mensch auf diesem Platz ist gerade nicht verbunden. */
+  readonly offline: boolean;
   readonly onTap: (tap: Tap) => void;
 }
 
@@ -27,6 +29,7 @@ export function Opponent({
   changed,
   landing,
   reveal,
+  offline,
   onTap,
 }: OpponentProps) {
   const hand = view.hands[player] ?? [];
@@ -54,6 +57,7 @@ export function Opponent({
         })}
       </div>
       {view.knocker === player ? <span className="knock-mark">klopft</span> : null}
+      {offline ? <span className="offline-mark">ist offline</span> : null}
     </div>
   );
 }

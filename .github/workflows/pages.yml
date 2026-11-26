@@ -27,6 +27,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build -w @blanko/app
+        env:
+          # Adresse des Mehrspieler-Servers; ohne sie zeigt die App kein „Online spielen“.
+          VITE_SERVER_URL: ${{ vars.BLANKO_SERVER_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: packages/app/dist

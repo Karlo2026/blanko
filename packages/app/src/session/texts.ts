@@ -1,67 +1,86 @@
 import type { GameEvent, PlayerView } from '@blanko/engine';
 import { cardAccusative, rankAccusative } from './card-names.ts';
 import type { Selection } from './interaction.ts';
-import { HUMAN } from './session.ts';
+
+/** Wer gerade zuschaut: Namen aller Plätze und der eigene Platz. */
+interface Audience {
+  readonly names: readonly string[];
+  readonly viewer: number;
+}
 
 /** Satzanfang mit passender Verbform: „Du legst“ bzw. „Karl legt“. */
-function subject(names: readonly string[], player: number, own: string, other: string): string {
-  return player === HUMAN ? `Du ${own}` : `${names[player] ?? '?'} ${other}`;
+function subject({ names, viewer }: Audience, player: number, own: string, other: string): string {
+  return player === viewer ? `Du ${own}` : `${names[player] ?? '?'} ${other}`;
 }
 
-function target(names: readonly string[], player: number): string {
-  return player === HUMAN ? 'dir' : (names[player] ?? '?');
+function target({ names, viewer }: Audience, player: number): string {
+  return player === viewer ? 'dir' : (names[player] ?? '?');
 }
 
-function describe(event: GameEvent, names: readonly string[]): string | null {
+function describe(event: GameEvent, audience: Audience): string | null {
   switch (event.type) {
     case 'reshuffled':
       return 'Der Ablagestapel wird neu gemischt.';
     case 'drew':
       return null;
     case 'kept':
-      return `${subject(names, event.player, 'tauschst und legst', 'tauscht und legt')} ${cardAccusative(event.discarded)} ab.`;
+      return `${subject(audience, event.player, 'tauschst und legst', 'tauscht und legt')} ${cardAccusative(event.discarded)} ab.`;
     case 'discarded':
-      return `${subject(names, event.player, 'legst', 'legt')} ${cardAccusative(event.card)} ab.`;
+      return `${subject(audience, event.player, 'legst', 'legt')} ${cardAccusative(event.card)} ab.`;
     case 'peekedOwn':
-      return `${subject(names, event.player, 'schaust', 'schaut')} eine eigene Karte an.`;
+      return `${subject(audience, event.player, 'schaust', 'schaut')} eine eigene Karte an.`;
     case 'peekedOpponent':
-      return `${subject(names, event.player, 'schaust', 'schaut')} eine Karte von ${target(names, event.target)} an.`;
+      return `${subject(audience, event.player, 'schaust', 'schaut')} eine Karte von ${target(audience, event.target)} an.`;
     case 'swapped':
-      return `${subject(names, event.player, 'tauschst', 'tauscht')} blind mit ${target(names, event.target)}.`;
+      return `${subject(audience, event.player, 'tauschst', 'tauscht')} blind mit ${target(audience, event.target)}.`;
     case 'matched':
-      return `${subject(names, event.player, 'legst', 'legt')} passend ${cardAccusative(event.card)} ab.`;
+      return `${subject(audience, event.player, 'legst', 'legt')} passend ${cardAccusative(event.card)} ab.`;
     case 'matchFailed':
-      return `${subject(names, event.player, 'legst', 'legt')} ${cardAccusative(event.card)} – passt nicht, Strafkarte.`;
+      return `${subject(audience, event.player, 'legst', 'legt')} ${cardAccusative(event.card)} – passt nicht, Strafkarte.`;
     case 'knocked':
-      return `${subject(names, event.player, 'klopfst', 'klopft')}!`;
+      return `${subject(audience, event.player, 'klopfst', 'klopft')}!`;
     case 'handEmptied':
-      return `${subject(names, event.player, 'hast', 'hat')} keine Karten mehr und ${event.player === HUMAN ? 'gewinnst' : 'gewinnt'} die Runde!`;
+      return `${subject(audience, event.player, 'hast', 'hat')} keine Karten mehr und ${event.player === audience.viewer ? 'gewinnst' : 'gewinnt'} die Runde!`;
     case 'roundEnded':
       return 'Die Runde ist vorbei.';
   }
 }
 
-/** Beschreibung eines abgeschlossenen Zuges, etwa „Karl legt eine 7 ab.“ */
-export function moveText(events: readonly GameEvent[], names: readonly string[]): string {
+/** Beschreibung eines abgeschlossenen Zuges aus Sicht von `viewer`, etwa „Karl legt eine 7 ab.“ */
+export function moveText(
+  events: readonly GameEvent[],
+  names: readonly string[],
+  viewer: number,
+): string {
   return events
-    .map((e) => describe(e, names))
+    .map((e) => describe(e, { names, viewer }))
     .filter((t): t is string => t !== null)
     .join(' ');
 }
 
 /**
- * Statuszeile: der letzte abgeschlossene Zug, dazu wer gerade gezogen hat oder dass der Mensch dran
+ * Statuszeile: der letzte abgeschlossene Zug, dazu wer gerade gezogen hat oder dass man selbst dran
  * ist, etwa „Karl legt eine 7 ab. Du bist dran.“ Ein bloßes Ziehen überschreibt den letzten Zug nicht.
  */
 export function statusText(lastMove: string, names: readonly string[], view: PlayerView): string {
   const parts = lastMove === '' ? [] : [lastMove];
-  if (view.phase === 'drawn' && view.current !== HUMAN)
+  if (view.phase === 'drawn' && view.current !== view.viewer)
     parts.push(`${names[view.current] ?? '?'} zieht.`);
-  if (view.phase === 'turnStart' && view.current === HUMAN) parts.push('Du bist dran.');
+  if (view.phase === 'turnStart' && view.current === view.viewer) parts.push('Du bist dran.');
   return parts.join(' ');
 }
 
-/** Hinweiszeile: was der Mensch gerade tun kann. */
+/** Online: Der Tisch wartet auf jemanden, der gerade nicht verbunden ist. */
+export function offlineText(
+  names: readonly string[],
+  view: PlayerView,
+  offline: ReadonlySet<number>,
+): string {
+  if (view.phase === 'roundOver' || !offline.has(view.current)) return '';
+  return `${names[view.current] ?? '?'} ist offline, der Tisch wartet.`;
+}
+
+/** Hinweiszeile: was man gerade tun kann. */
 export function hintText(
   view: PlayerView,
   selection: Selection,
@@ -69,8 +88,8 @@ export function hintText(
   canKnock: boolean,
 ): string {
   if (view.phase === 'roundOver') return '';
-  if (view.current !== HUMAN) {
-    return view.knocker === HUMAN
+  if (view.current !== view.viewer) {
+    return view.knocker === view.viewer
       ? 'Du hast geklopft. Die anderen haben noch einen Zug.'
       : `${names[view.current] ?? '?'} ist am Zug.`;
   }

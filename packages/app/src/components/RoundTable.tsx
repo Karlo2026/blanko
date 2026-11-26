@@ -1,75 +1,58 @@
-import type { GameState, RoundScore, Rng } from '@blanko/engine';
-import { seatPositions } from '../session/display.ts';
+import { opponentOrder, seatPositions } from '../session/display.ts';
 import { mainButton, tappableKeys } from '../session/interaction.ts';
-import type { Session } from '../session/session.ts';
-import type { Tempo } from '../session/tempo.ts';
-import { hintText } from '../session/texts.ts';
-import { useTable } from '../session/use-table.ts';
+import type { Table } from '../session/table.ts';
+import { hintText, offlineText } from '../session/texts.ts';
 import { FlightLayer } from './FlightLayer.tsx';
 import { Opponent } from './Opponent.tsx';
 import { OwnHand } from './OwnHand.tsx';
 import { Piles } from './Piles.tsx';
-import { RoundEnd } from './RoundEnd.tsx';
 
 interface RoundTableProps {
-  readonly session: Session;
-  readonly start: GameState;
-  readonly rng: Rng;
-  readonly tempo: Tempo;
-  readonly ratingChange: number;
-  readonly nextOpponentRating: number | null;
-  readonly onScored: (score: RoundScore) => void;
-  readonly onNextRound: () => void;
-  readonly onEndSession: () => void;
+  readonly table: Table;
+  /** Online: Plätze, deren Mensch gerade nicht verbunden ist. */
+  readonly offline: ReadonlySet<number>;
 }
 
-/** Eine Runde am Tisch: Gegner rundherum, Stapel in der Mitte, eigene Karten unten. */
-export function RoundTable({
-  session,
-  start,
-  rng,
-  tempo,
-  ratingChange,
-  nextOpponentRating,
-  onScored,
-  onNextRound,
-  onEndSession,
-}: RoundTableProps) {
-  const table = useTable(session, start, rng, tempo, onScored);
-  const { view, legal, selection } = table;
+/**
+ * Eine Runde am Tisch: Gegner rundherum, Stapel in der Mitte, eigene Karten unten. Der Tisch ist
+ * so gedreht, dass der eigene Platz unten liegt; ob die Züge lokal oder vom Server kommen, spielt
+ * hier keine Rolle.
+ */
+export function RoundTable({ table, offline }: RoundTableProps) {
+  const { view, legal, selection, names } = table;
   // Während Karten fliegen, ist nichts antippbar und der Knopf ausgeblendet.
   const tappable = table.busy ? new Set<string>() : tappableKeys(view, legal, selection);
   const button = table.busy ? null : mainButton(view, legal, selection);
-  const positions = seatPositions(session.names.length - 1);
+  const opponents = opponentOrder(view.viewer, view.playerCount);
+  const positions = seatPositions(opponents.length);
   const canKnock = legal.some((a) => a.type === 'knock');
+  const status = [table.status, offlineText(names, view, offline)].filter((t) => t !== '');
   return (
     <>
       <div className="table">
-        {positions.map((position, index) => {
-          const player = index + 1;
-          return (
-            <Opponent
-              key={player}
-              view={view}
-              player={player}
-              name={session.names[player] ?? '?'}
-              position={position}
-              tappable={tappable}
-              changed={table.changed}
-              landing={table.landing}
-              reveal={table.reveal}
-              onTap={table.tap}
-            />
-          );
-        })}
+        {opponents.map((player, index) => (
+          <Opponent
+            key={player}
+            view={view}
+            player={player}
+            name={names[player] ?? '?'}
+            position={positions[index] ?? 'top'}
+            tappable={tappable}
+            changed={table.changed}
+            landing={table.landing}
+            reveal={table.reveal}
+            offline={offline.has(player)}
+            onTap={table.tap}
+          />
+        ))}
         <div className="center">
           <Piles view={view} tappable={tappable} landing={table.landing} onTap={table.tap} />
         </div>
       </div>
       <div className="status" aria-live="polite">
-        {table.status}
+        {status.join(' ')}
       </div>
-      <div className="hint">{hintText(view, selection, session.names, canKnock)}</div>
+      <div className="hint">{hintText(view, selection, names, canKnock)}</div>
       <OwnHand
         view={view}
         selection={selection}
@@ -92,17 +75,6 @@ export function RoundTable({
         ) : null}
       </div>
       <FlightLayer flights={table.flights} />
-      {table.score !== null && !table.busy ? (
-        <RoundEnd
-          session={session}
-          score={table.score}
-          knocker={view.knocker}
-          ratingChange={ratingChange}
-          nextOpponentRating={nextOpponentRating}
-          onNext={onNextRound}
-          onEnd={onEndSession}
-        />
-      ) : null}
     </>
   );
 }
