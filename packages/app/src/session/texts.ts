@@ -77,12 +77,10 @@ export function hintText(
   if (selection.kind === 'match') return 'Tippe die Ablage, um die Karte abzulegen.';
   if (selection.kind === 'swap') return 'Tippe jetzt die gegnerische Karte für den blinden Tausch.';
   if (view.phase === 'special') {
-    const skip = ' Oder „Ohne Wirkung“.';
-    if (view.specialRank === 8)
-      return `8 abgelegt: Tippe eine eigene Karte, um sie anzuschauen.${skip}`;
+    if (view.specialRank === 8) return '8 abgelegt: Tippe eine eigene Karte, um sie anzuschauen.';
     if (view.specialRank === 9)
-      return `9 abgelegt: Tippe eine Karte eines Gegners, um sie anzuschauen.${skip}`;
-    return `10 abgelegt: Tippe erst deine Karte, dann die eines Gegners, um sie blind zu tauschen.${skip}`;
+      return '9 abgelegt: Tippe eine Karte eines Gegners, um sie anzuschauen.';
+    return '10 abgelegt: Tippe erst deine Karte, dann die eines Gegners, um sie blind zu tauschen.';
   }
   if (view.phase === 'drawn') {
     const rank = view.drawnCard?.rank;

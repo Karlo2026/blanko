@@ -4,17 +4,12 @@ import { replaceAt } from './list.ts';
 import type { GameState } from './state.ts';
 import { cardAt, endTurn, handOf, withHand, type ActionResult } from './turn.ts';
 
-type SpecialAction = Extract<
-  Action,
-  { type: 'peekOwn' | 'peekOpponent' | 'blindSwap' | 'skipSpecial' }
->;
+type SpecialAction = Extract<Action, { type: 'peekOwn' | 'peekOpponent' | 'blindSwap' }>;
 
-/** Wirkung der abgelegten 8, 9 oder 10 – oder Verzicht darauf; danach endet der Zug. */
+/** Wirkung der abgelegten 8, 9 oder 10; sie ist Pflicht. Danach endet der Zug. */
 export function resolveSpecial(state: GameState, action: SpecialAction): ActionResult {
   const player = state.current;
   switch (action.type) {
-    case 'skipSpecial':
-      return endTurn(state, []);
     case 'peekOwn': {
       const card = cardAt(state, player, action.slot);
       const event: GameEvent = { type: 'peekedOwn', player, slot: action.slot };

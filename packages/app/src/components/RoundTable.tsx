@@ -85,11 +85,6 @@ export function RoundTable({
             Klopfen
           </button>
         ) : null}
-        {button === 'skip' ? (
-          <button type="button" className="main-button" onClick={table.skip}>
-            Ohne Wirkung
-          </button>
-        ) : null}
         {button === 'cancel' ? (
           <button type="button" className="main-button" onClick={table.cancel}>
             Abbrechen

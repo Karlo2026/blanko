@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DECK_SIZE } from './cards.ts';
+import { cardOf, DECK_SIZE } from './cards.ts';
 import { knows } from './knowledge.ts';
 import { legalActions } from './legal.ts';
 import { createRng } from './rng.ts';
@@ -59,8 +59,10 @@ describe('Vorbereitung', () => {
     expect(after.canStillPeek).toEqual([false, true, true]);
   });
 
-  it('A2: erlaubt keinen Gleiche-Karte-Zug auf die Startkarte', () => {
+  it('A2: erlaubt dem ersten Spieler einen Gleiche-Karte-Zug auf die Startkarte (Hausregel)', () => {
     const state = startRound({ playerCount: 2, dealer: 0 }, createRng(5));
-    expect(legalActions(state).some((a) => a.type === 'matchDiscard')).toBe(false);
+    const start = state.discardPile[0] ?? -1;
+    expect(state.matchableRank).toBe(cardOf(start).rank);
+    expect(legalActions(state).filter((a) => a.type === 'matchDiscard')).toHaveLength(4);
   });
 });

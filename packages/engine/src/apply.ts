@@ -36,7 +36,6 @@ export function applyAction(state: GameState, action: Action, rng: Rng): ActionR
     case 'peekOwn':
     case 'peekOpponent':
     case 'blindSwap':
-    case 'skipSpecial':
       return resolveSpecial(state, action);
   }
 }

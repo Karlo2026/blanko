@@ -12,8 +12,6 @@ export type Action =
   | { readonly type: 'peekOwn'; readonly slot: number }
   /** Nach einer abgelegten 9: eine Karte eines Gegners anschauen. */
   | { readonly type: 'peekOpponent'; readonly target: PlayerId; readonly targetSlot: number }
-  /** Nach einer abgelegten 8, 9 oder 10: auf die Wirkung verzichten. */
-  | { readonly type: 'skipSpecial' }
   /** Nach einer abgelegten 10: eine eigene Karte blind mit einer gegnerischen tauschen. */
   | {
       readonly type: 'blindSwap';
@@ -75,7 +73,6 @@ export function actionKey(action: Action): string {
     case 'draw':
     case 'knock':
     case 'discardDrawn':
-    case 'skipSpecial':
       return action.type;
     case 'matchDiscard':
     case 'keep':

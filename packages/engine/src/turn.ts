@@ -2,6 +2,7 @@ import type { GameEvent } from './actions.ts';
 import { cardOf, type CardId, type Rank } from './cards.ts';
 import { revealToAll } from './knowledge.ts';
 import { at, replaceAt } from './list.ts';
+import { specialActions } from './legal.ts';
 import { canTakeFromDrawPile } from './piles.ts';
 import { nextPlayer, type GameState, type Hand, type PlayerId, type SpecialRank } from './state.ts';
 
@@ -34,9 +35,11 @@ export function finishDiscard(
   events: readonly GameEvent[],
 ): ActionResult {
   const rank = cardOf(discarded).rank;
-  return isSpecialRank(rank)
-    ? { state: { ...state, phase: { kind: 'special', rank } }, events }
-    : endTurn(state, events);
+  // Pflicht-Wirkung (Hausregel 26.11.2026): Ohne mögliches Ziel, etwa bei einer 10, wenn nur noch der
+  // Klopfer als Gegner bleibt, entfällt der Sonderschritt und der Zug endet.
+  if (!isSpecialRank(rank) || specialActions(state, rank).length === 0)
+    return endTurn(state, events);
+  return { state: { ...state, phase: { kind: 'special', rank } }, events };
 }
 
 export function withHand(state: GameState, player: PlayerId, hand: Hand): GameState {

@@ -14,8 +14,9 @@ Verbindliche Quelle sind die Hausregeln aus dem Auftrag. Diese Seite fasst zusam
 - Sonderkarten wirken bei **jedem offenen Ablegen** (Hausregel-Änderung vom 19.11.2026): frisch
   gezogen und direkt abgelegt, beim Behalten aus der Hand abgelegt oder als gleiche Karte. 8 eigene
   Karte anschauen, 9 gegnerische Karte anschauen, 10 eigene Karte blind mit einer gegnerischen
-  tauschen. Die Wirkung ist freiwillig. Keine Wirkung hat eine behaltene 8, 9 oder 10 und eine
-  falsch abgelegte, die zurück in die Hand geht.
+  tauschen. Die Wirkung ist **Pflicht** (Hausregel vom 26.11.2026, vorher freiwillig); nur ohne
+  mögliches Ziel entfällt sie. Keine Wirkung hat eine behaltene 8, 9 oder 10 und eine falsch
+  abgelegte, die zurück in die Hand geht.
   Ursprünglich galt: nur frisch gezogen und direkt abgelegt.
 - **Keine Karten mehr** (Hausregel vom 19.11.2026): Wer seine letzte Karte (per gleicher Karte)
   ablegt, beendet die Runde sofort und wird Erster; die anderen werden nach Punkten platziert, auch
@@ -39,7 +40,7 @@ Alle Schalter stehen in [`packages/engine/src/rules.ts`](../packages/engine/src/
 | Nr. | Annahme                                                                                                                       | Umsetzung                                 |
 | --- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
 | A1  | Plätze sind fest; abgelegte Plätze bleiben leer. Strafkarte auf den ersten freien Platz, sonst neue Reihe.                    | `penaltyFillsEmptySlot`                   |
-| A2  | Auf die aufgedeckte Startkarte darf keine gleiche Karte gelegt werden.                                                        | `matchOnStartCard`                        |
+| A2  | Auf die aufgedeckte Startkarte darf der erste Spieler eine gleiche Karte legen (Hausregel vom 26.11.2026; vorher verboten).   | `matchOnStartCard`                        |
 | A3  | Gleiche Karten bilden eine Kette.                                                                                             | `matchChains`                             |
 | A4  | ~~Eine per Gleiche-Karte-Zug abgelegte 8, 9 oder 10 löst nichts aus.~~ Entfallen durch die Hausregel-Änderung vom 19.11.2026. | –                                         |
 | A5  | Falsch abgelegte Karte geht verdeckt zurück und ist danach allen bekannt.                                                     | `failedMatchRevealsToAll`                 |

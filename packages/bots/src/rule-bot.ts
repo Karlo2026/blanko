@@ -35,7 +35,10 @@ export interface RuleParams {
   readonly peekOwnValue: number;
   /** Wie viel ein Blick per 9 auf eine unbekannte Gegnerkarte wert ist. */
   readonly peekOpponentValue: number;
-  /** Mindestgewinn eines 10-Tauschs. */
+  /**
+   * Risikoabschlag eines blinden 10-Tauschs, wenn entschieden wird, eine 10 abzulegen (die Wirkung
+   * ist Pflicht). Früher die Mindestgrenze, ab der überhaupt getauscht wurde.
+   */
   readonly swapMargin: number;
   /** Mindestwahrscheinlichkeit (0 bis 1), um eine unbekannte Karte auf Verdacht abzulegen; über 1 heißt nie. */
   readonly suspicionThreshold: number;
@@ -64,8 +67,9 @@ function isHidden(view: PlayerView, player: number, slot: number): boolean {
 }
 
 /**
- * Bewertung einer Sonderaktion nach dem Ablegen einer 8, 9 oder 10; null heißt „nicht sinnvoll“.
- * `hand` ist die eigene Hand, auf die sich die Aktion bezieht.
+ * Bewertung einer Sonderaktion nach dem Ablegen einer 8, 9 oder 10, bezogen auf die eigene `hand`.
+ * Seit der Hausregel vom 26.11.2026 ist die Wirkung Pflicht; jede Aktion bekommt deshalb eine Zahl:
+ * ein Blick auf eine bekannte Karte bringt nichts, ein Tausch kann auch schaden.
  */
 function scoreSpecialAction(
   s: Situation,
@@ -75,15 +79,16 @@ function scoreSpecialAction(
 ): number | null {
   switch (action.type) {
     case 'peekOwn':
-      return hand[action.slot]?.kind === 'hidden' ? params.peekOwnValue : null;
+      return hand[action.slot]?.kind === 'hidden' ? params.peekOwnValue : 0;
     case 'peekOpponent':
-      return isHidden(s.view, action.target, action.targetSlot) ? params.peekOpponentValue : null;
+      return isHidden(s.view, action.target, action.targetSlot) ? params.peekOpponentValue : 0;
     case 'blindSwap': {
       const theirs = s.view.hands[action.target]?.[action.targetSlot];
       if (theirs === undefined) return null;
-      const before = estimateHand(hand, s.unknownValue);
-      const gain = before - estimateHand(withSlot(hand, action.slot, theirs), s.unknownValue);
-      return gain >= params.swapMargin ? gain : null;
+      return (
+        estimateHand(hand, s.unknownValue) -
+        estimateHand(withSlot(hand, action.slot, theirs), s.unknownValue)
+      );
     }
     default:
       return null;
@@ -107,18 +112,22 @@ function possibleSpecials(s: Situation, hand: readonly SlotView[], rank: Rank): 
   return [];
 }
 
-/** Was es wert ist, nach dem Ablegen einer Karte dieses Rangs die Sonderfunktion nutzen zu dürfen. */
+/**
+ * Was die Pflicht-Wirkung nach dem Ablegen einer Karte dieses Rangs bringt: die beste mögliche
+ * Sonderaktion, bei der 10 abzüglich `swapMargin` als Abschlag für das Risiko des blinden Tauschs.
+ * Ohne mögliches Ziel entfällt der Sonderschritt, der Wert ist dann 0.
+ */
 function specialValue(
   s: Situation,
   hand: readonly SlotView[],
   rank: Rank,
   params: RuleParams,
 ): number {
-  let best = 0;
-  for (const action of possibleSpecials(s, hand, rank)) {
-    best = Math.max(best, scoreSpecialAction(s, hand, action, params) ?? 0);
-  }
-  return best;
+  const scores = possibleSpecials(s, hand, rank).map(
+    (a) => scoreSpecialAction(s, hand, a, params) ?? 0,
+  );
+  if (scores.length === 0) return 0;
+  return Math.max(...scores) - (rank === 10 ? params.swapMargin : 0);
 }
 
 /**
@@ -153,22 +162,21 @@ function leaderBonus(s: Situation, action: Action): number {
 }
 
 /**
- * Bestbewertete Aktion über `fallback` (Bewertung 0); echte Gleichstände entscheidet der Zufall.
- * Vorher gewann die erste in der Liste, und weil die Liste nach Spielernummer sortiert ist, traf jeder
- * 10-Tausch bei verdeckten Karten Spieler 0 – im Labor kostete das Sitz 0 bei 6 Spielern 0,19
- * Platzierungspunkte.
+ * Bestbewertete erlaubte Aktion; Aktionen ohne Bewertung (null) scheiden aus. Echte Gleichstände
+ * entscheidet der Zufall. Vorher gewann die erste in der Liste, und weil die Liste nach Spielernummer
+ * sortiert ist, traf jeder 10-Tausch bei verdeckten Karten Spieler 0 – im Labor kostete das Sitz 0 bei
+ * 6 Spielern 0,19 Platzierungspunkte.
  */
 function chooseBest(
   s: Situation,
   legal: readonly Action[],
-  fallback: Action,
   score: (action: Action) => number | null,
   rng: Rng,
 ): Action {
-  let best: Action[] = [fallback];
-  let bestScore = score(fallback) ?? 0;
+  let best: Action[] = [];
+  let bestScore = -Infinity;
   for (const action of legal) {
-    const raw = action.type === fallback.type ? null : score(action);
+    const raw = score(action);
     if (raw === null) continue;
     const value = raw + leaderBonus(s, action);
     if (value > bestScore) {
@@ -178,7 +186,7 @@ function chooseBest(
       best.push(action);
     }
   }
-  return pickRandom(best, rng);
+  return pickRandom(best.length > 0 ? best : legal, rng);
 }
 
 /** Eine bekannte passende Karte wird immer abgelegt, eine unbekannte nur ab der Verdachtsgrenze. */
@@ -260,21 +268,9 @@ export function createRuleBot(params: RuleParams, mistakeRate: number): Bot {
       const s = situationOf(view);
       switch (view.phase) {
         case 'drawn':
-          return chooseBest(
-            s,
-            legal,
-            { type: 'discardDrawn' },
-            (a) => scoreDrawnAction(s, a, params),
-            rng,
-          );
+          return chooseBest(s, legal, (a) => scoreDrawnAction(s, a, params), rng);
         case 'special':
-          return chooseBest(
-            s,
-            legal,
-            { type: 'skipSpecial' },
-            (a) => scoreSpecialAction(s, s.ownHand, a, params),
-            rng,
-          );
+          return chooseBest(s, legal, (a) => scoreSpecialAction(s, s.ownHand, a, params), rng);
         default:
           return chooseAtTurnStart(s, legal, params, rng);
       }

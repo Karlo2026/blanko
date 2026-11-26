@@ -45,7 +45,9 @@ vermessen, gehört aber nicht zur Leiter des dynamischen Modus, weil er langsame
 | Großmeister | 1672 | 56,6 %                      |
 
 Neu vermessen am 19.11.2026 nach den Hausregel-Änderungen (Sonderkarten bei jedem offenen Ablegen,
-Rundensieg ohne Karten); vorher lagen die Werte zwischen 1337 und 1668.
+Rundensieg ohne Karten); vorher lagen die Werte zwischen 1337 und 1668. Die Änderungen vom 26.11.2026
+(Ablegen auf die Startkarte, Pflicht-Wirkung) sind noch nicht vermessen; neu messen mit
+`npm run lab -- export --games 8000 --seed 2`.
 
 Im Browser auf dem Mac dauert ein Großmeister-Zug rund 0,8 bis 1 Sekunde (davon 0,75 s bewusste
 Pause). Auf dem iPhone begrenzt das Zeitbudget die Rechenzeit; erreicht er dort die 100 Iterationen

@@ -31,7 +31,10 @@ export interface Analysis {
   readonly rounds: number;
   /** Klopfen jetzt minus Ziehen; Schlüssel `Spieler|Schätzung|Fortschritt`. */
   readonly knock: Map<string, Tally>;
-  /** 10-Tausch minus einfaches Ablegen; Schlüssel `eigene Karte|Zielkarte|Ziel führt`. */
+  /**
+   * Zufälliger 10-Tausch minus der Tausch nach Faustregeln (die Wirkung ist Pflicht);
+   * Schlüssel `eigene Karte|Zielkarte|Ziel führt`.
+   */
   readonly swap: Map<string, Tally>;
   /** Ablegen auf Verdacht minus normale Wahl; Schlüssel Trefferwahrscheinlichkeit. */
   readonly suspicion: Map<string, Tally>;
@@ -113,6 +116,7 @@ function analyzeKnock(
 function analyzeSwap(
   state: GameState,
   view: PlayerView,
+  ruleChoice: Action,
   seats: readonly Seat[],
   rng: Rng,
   out: Analysis,
@@ -129,7 +133,7 @@ function analyzeSwap(
   const leader =
     opponents.indexOf(Math.min(...opponents)) === swap.target ? 'Ziel führt' : 'Ziel führt nicht';
   const key = `${slotBucket(view, view.viewer, swap.slot)}|${slotBucket(view, swap.target, swap.targetSlot)}|${leader}`;
-  addTo(out.swap, key, compare(state, swap, { type: 'skipSpecial' }, seats, rng));
+  addTo(out.swap, key, compare(state, swap, ruleChoice, seats, rng));
 }
 
 function analyzeSuspicion(
@@ -193,7 +197,7 @@ export function analyze(profile: BotProfile, rounds: number, seed: number): Anal
           analyzeKnock(state, view, seats, rng, out);
           analyzeSuspicion(state, view, ruleChoice, seats, rng, out);
         } else if (view.phase === 'special' && view.specialRank === 10) {
-          analyzeSwap(state, view, seats, rng, out);
+          analyzeSwap(state, view, ruleChoice, seats, rng, out);
         }
       }
       state = applyAction(state, ruleChoice, rng).state;

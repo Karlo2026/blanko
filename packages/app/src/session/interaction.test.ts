@@ -78,26 +78,19 @@ describe('Nach dem Ziehen', () => {
 describe('Nach dem Ablegen einer 8, 9 oder 10', () => {
   const special = (rank: 8 | 9 | 10, knocker: number | null = null) =>
     viewWith({ phase: 'special', specialRank: rank, knocker });
-  const skip: Action = { type: 'skipSpecial' };
 
-  it('8: eigene Karte antippen schaut sie an; verzichten nur über den Knopf', () => {
-    const legal: Action[] = [
-      skip,
-      ...[0, 1, 2, 3].map((slot): Action => ({ type: 'peekOwn', slot })),
-    ];
+  it('8: eigene Karte antippen schaut sie an; verzichten geht nicht (Pflicht)', () => {
+    const legal: Action[] = [...[0, 1, 2, 3].map((slot): Action => ({ type: 'peekOwn', slot }))];
     expect(resolveTap(special(8), legal, NO_SELECTION, { kind: 'own', slot: 3 })?.action).toEqual({
       type: 'peekOwn',
       slot: 3,
     });
     expect(resolveTap(special(8), legal, NO_SELECTION, { kind: 'discardPile' })).toBeNull();
-    expect(mainButton(special(8), legal, NO_SELECTION)).toBe('skip');
+    expect(mainButton(special(8), legal, NO_SELECTION)).toBeNull();
   });
 
   it('9: Gegnerkarte antippen schaut sie an; eigene Karten reagieren nicht', () => {
-    const legal: Action[] = [
-      skip,
-      ...opponents.map((o): Action => ({ type: 'peekOpponent', ...o })),
-    ];
+    const legal: Action[] = [...opponents.map((o): Action => ({ type: 'peekOpponent', ...o }))];
     expect(
       resolveTap(special(9), legal, NO_SELECTION, { kind: 'opponent', player: 2, slot: 0 })?.action,
     ).toEqual({
@@ -118,7 +111,7 @@ describe('Nach dem Ablegen einer 8, 9 oder 10', () => {
         targetSlot,
       })),
     );
-    const legal: Action[] = [skip, ...swaps];
+    const legal: Action[] = [...swaps];
     expect(resolveTap(view, legal, NO_SELECTION, { kind: 'own', slot: 1 })).toEqual({
       selection: { kind: 'swap', slot: 1 },
       action: null,
@@ -134,6 +127,6 @@ describe('Nach dem Ablegen einer 8, 9 oder 10', () => {
     });
     expect(resolveTap(view, legal, selection, { kind: 'opponent', player: 2, slot: 3 })).toBeNull();
     expect(mainButton(view, legal, selection)).toBe('cancel');
-    expect(mainButton(view, legal, NO_SELECTION)).toBe('skip');
+    expect(mainButton(view, legal, NO_SELECTION)).toBeNull();
   });
 });

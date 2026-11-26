@@ -21,8 +21,9 @@ export function RulesPage({ onBack }: RulesPageProps) {
         </li>
         <li>
           <strong>Gleiche Karte ablegen:</strong> Hat dein Vorgänger eine Karte abgeworfen, darfst
-          du eine eigene Karte gleichen Rangs ablegen: Karte antippen, dann die Ablage. Passt sie
-          nicht, geht sie zurück und du bekommst eine unbesehene Strafkarte.
+          du eine eigene Karte gleichen Rangs ablegen: Karte antippen, dann die Ablage. Das gilt
+          auch für die offene Startkarte im ersten Zug der Runde. Passt sie nicht, geht sie zurück
+          und du bekommst eine unbesehene Strafkarte.
         </li>
         <li>
           <strong>Klopfen:</strong> Wer glaubt, die niedrigste Hand zu haben, klopft. Danach hat
@@ -56,9 +57,9 @@ export function RulesPage({ onBack }: RulesPageProps) {
         </tbody>
       </table>
       <p className="muted">
-        Die Wirkung ist freiwillig: Nach dem Ablegen kannst du ein Ziel antippen oder „Ohne Wirkung“
-        wählen. Keine Wirkung hat eine 8, 9 oder 10, die du behältst oder die falsch abgelegt zurück
-        in die Hand geht.
+        Die Wirkung ist Pflicht: Nach dem Ablegen tippst du ein Ziel an. Nur wenn es kein mögliches
+        Ziel gibt, entfällt sie. Keine Wirkung hat eine 8, 9 oder 10, die du behältst oder die
+        falsch abgelegt zurück in die Hand geht.
       </p>
       <h2>Wertung</h2>
       <p>

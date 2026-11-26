@@ -40,32 +40,28 @@ function turnStartActions(state: GameState): Action[] {
   return actions;
 }
 
-/** Wirkung der gerade abgelegten 8, 9 oder 10; verzichten ist immer erlaubt. */
-function specialActions(state: GameState, rank: SpecialRank): Action[] {
+/**
+ * Mögliche Wirkungen der gerade abgelegten 8, 9 oder 10. Hausregel (26.11.2026): Die Wirkung ist
+ * Pflicht; verzichten geht nicht. Gibt es kein Ziel, folgt gar kein Sonderschritt (siehe finishDiscard).
+ */
+export function specialActions(state: GameState, rank: SpecialRank): Action[] {
   const own = occupiedSlots(at(state.hands, state.current));
-  const skip: Action = { type: 'skipSpecial' };
   switch (rank) {
     case 8:
-      return [skip, ...own.map((slot): Action => ({ type: 'peekOwn', slot }))];
+      return own.map((slot): Action => ({ type: 'peekOwn', slot }));
     case 9:
-      return [
-        skip,
-        ...opponentSlots(state, RULES.ninePeekAtKnocker).map((t): Action => ({
-          type: 'peekOpponent',
+      return opponentSlots(state, RULES.ninePeekAtKnocker).map((t): Action => ({
+        type: 'peekOpponent',
+        ...t,
+      }));
+    case 10:
+      return own.flatMap((slot) =>
+        opponentSlots(state, RULES.tenSwapWithKnocker).map((t): Action => ({
+          type: 'blindSwap',
+          slot,
           ...t,
         })),
-      ];
-    case 10:
-      return [
-        skip,
-        ...own.flatMap((slot) =>
-          opponentSlots(state, RULES.tenSwapWithKnocker).map((t): Action => ({
-            type: 'blindSwap',
-            slot,
-            ...t,
-          })),
-        ),
-      ];
+      );
   }
 }
 

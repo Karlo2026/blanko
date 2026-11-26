@@ -17,7 +17,7 @@
 export interface RuleOptions {
   /** A1: Strafkarte füllt den ersten leeren Platz; sonst neue Reihe unter dem Quadrat. */
   readonly penaltyFillsEmptySlot: boolean;
-  /** A2: Gleiche Karte darf auf die aufgedeckte Startkarte gelegt werden. */
+  /** A2: Gleiche Karte darf auf die aufgedeckte Startkarte gelegt werden (seit Hausregel 26.11.2026 an). */
   readonly matchOnStartCard: boolean;
   /** A3: Ein Gleiche-Karte-Zug eröffnet dem nächsten Spieler erneut einen Gleiche-Karte-Zug. */
   readonly matchChains: boolean;
@@ -35,7 +35,7 @@ export interface RuleOptions {
 
 export const RULES: RuleOptions = {
   penaltyFillsEmptySlot: true,
-  matchOnStartCard: false,
+  matchOnStartCard: true,
   matchChains: true,
   failedMatchRevealsToAll: true,
   tenSwapWithKnocker: false,

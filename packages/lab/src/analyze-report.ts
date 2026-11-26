@@ -75,9 +75,10 @@ function swapSection(analysis: Analysis): string[] {
     ]),
   );
   return [
-    '## Wann lohnt sich der 10-Tausch, und mit wem?',
+    '## Welcher 10-Tausch ist der beste?',
     '',
-    'Platzierungspunkte „tauschen“ minus „verzichten“ nach einer abgelegten 10, nach Punktwert der eigenen und der Zielkarte',
+    'Platzierungspunkte „dieser Tausch“ minus „Tausch nach Faustregeln“ nach einer abgelegten 10',
+    '(die Wirkung ist Pflicht), nach Punktwert der eigenen und der Zielkarte',
     '(soweit bekannt) und danach, ob der Gegner geschätzt führt.',
     '',
     ...table(['eigene Karte', 'Zielkarte', 'Ziel führt', 'Ziel führt nicht'], rows),

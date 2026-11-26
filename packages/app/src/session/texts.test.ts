@@ -52,7 +52,7 @@ describe('Hinweiszeile', () => {
     ).toBe('Ablage antippen: 8 ablegen und ihre Wirkung nutzen. Eigene Karte antippen: tauschen.');
     expect(
       hintText(viewWith({ phase: 'special', specialRank: 9 }), { kind: 'none' }, names, false),
-    ).toContain('Ohne Wirkung');
+    ).toBe('9 abgelegt: Tippe eine Karte eines Gegners, um sie anzuschauen.');
   });
 
   it('sagt, was gerade geht', () => {

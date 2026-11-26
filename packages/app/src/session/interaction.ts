@@ -68,8 +68,7 @@ function afterDraw(legal: readonly Action[], tap: Tap): TapResult | null {
 
 /**
  * Nach dem Ablegen einer 8, 9 oder 10: Ziel antippen. Bei der 10 erst die eigene, dann die
- * gegnerische Karte. Verzichten geht nur über den Knopf „Ohne Wirkung“, damit es nicht aus Versehen
- * passiert.
+ * gegnerische Karte. Die Wirkung ist Pflicht (Hausregel 26.11.2026); verzichten geht nicht.
  */
 function inSpecial(
   view: PlayerView,
@@ -155,10 +154,9 @@ export function tappableKeys(
 }
 
 /**
- * Der einzige Knopf unten: Klopfen zu Beginn des Zuges, Abbrechen bei angehobener Karte, „Ohne
- * Wirkung“ nach dem Ablegen einer 8, 9 oder 10.
+ * Der einzige Knopf unten: Klopfen zu Beginn des Zuges, Abbrechen bei angehobener Karte.
  */
-export type MainButton = 'knock' | 'cancel' | 'skip' | null;
+export type MainButton = 'knock' | 'cancel' | null;
 
 export function mainButton(
   view: PlayerView,
@@ -167,7 +165,6 @@ export function mainButton(
 ): MainButton {
   if (view.current !== HUMAN || view.phase === 'roundOver') return null;
   if (selection.kind === 'match' || selection.kind === 'swap') return 'cancel';
-  if (view.phase === 'special' && has(legal, (a) => a.type === 'skipSpecial')) return 'skip';
   if (view.phase === 'turnStart' && has(legal, (a) => a.type === 'knock')) return 'knock';
   return null;
 }

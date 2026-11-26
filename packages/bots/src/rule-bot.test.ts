@@ -95,18 +95,13 @@ describe('RuleBot nach dem Ziehen', () => {
       hands: [[known(2), hidden, known(3), known(4)], opponentHidden],
     });
     const peeks = [0, 1, 2, 3].map((slot): Action => ({ type: 'peekOwn', slot }));
-    expect(bot.chooseAction(view, [{ type: 'skipSpecial' }, ...peeks], rng)).toEqual({
-      type: 'peekOwn',
-      slot: 1,
-    });
-    // Ist alles bekannt, lohnt kein Blick: verzichten.
+    expect(bot.chooseAction(view, peeks, rng)).toEqual({ type: 'peekOwn', slot: 1 });
+    // Ist alles bekannt, muss trotzdem geschaut werden: Die Wirkung ist Pflicht.
     const allKnown = makeView({
       ...view,
       hands: [[known(2), known(5), known(3), known(4)], opponentHidden],
     });
-    expect(bot.chooseAction(allKnown, [{ type: 'skipSpecial' }, ...peeks], rng)).toEqual({
-      type: 'skipSpecial',
-    });
+    expect(bot.chooseAction(allKnown, peeks, rng).type).toBe('peekOwn');
   });
 
   it('rechnet die Sonderfunktion einer eigenen 8 mit, die beim Behalten abgelegt wird', () => {
@@ -118,6 +113,30 @@ describe('RuleBot nach dem Ziehen', () => {
       hands: [[known(8), hidden, known(3), known(4)], opponentHidden],
     });
     expect(bot.chooseAction(view, legalDrawn(), rng)).toEqual({ type: 'keep', slot: 0 });
+  });
+
+  it('tauscht bei Pflicht-Wirkung so, dass es am wenigsten schadet', () => {
+    // Nur niedrige eigene Karten, beim Gegner ein bekannter König: Der Tausch muss sein, also die
+    // höchste eigene Karte (4) gegen eine verdeckte statt gegen den König.
+    const view = makeView({
+      phase: 'special',
+      specialRank: 10,
+      hands: [
+        [known(1), known(2), known(3), known(4)],
+        [known(13, 'hearts'), hidden, hidden, hidden],
+      ],
+    });
+    const swaps = [0, 1, 2, 3].flatMap((slot) =>
+      [0, 1, 2, 3].map((targetSlot): Action => ({
+        type: 'blindSwap',
+        slot,
+        target: 1,
+        targetSlot,
+      })),
+    );
+    const choice = bot.chooseAction(view, swaps, rng);
+    expect(choice).toMatchObject({ type: 'blindSwap', slot: 3 });
+    expect(choice.type === 'blindSwap' ? choice.targetSlot : -1).not.toBe(0);
   });
 
   it('tauscht per 10 seinen bekannten König gegen ein bekanntes Ass des Gegners', () => {
@@ -137,7 +156,7 @@ describe('RuleBot nach dem Ziehen', () => {
         targetSlot,
       })),
     );
-    expect(bot.chooseAction(view, [{ type: 'skipSpecial' }, ...swaps], rng)).toEqual({
+    expect(bot.chooseAction(view, swaps, rng)).toEqual({
       type: 'blindSwap',
       slot: 1,
       target: 1,
@@ -200,11 +219,7 @@ describe('RuleBot: Zielwahl bei Gleichstand', () => {
         [hidden, hidden, hidden, hidden],
       ],
     });
-    const choice = bot.chooseAction(
-      view,
-      [{ type: 'skipSpecial' }, ...swapsFrom(1, [1, 2, 3])],
-      rng,
-    );
+    const choice = bot.chooseAction(view, swapsFrom(1, [1, 2, 3]), rng);
     expect(choice).toMatchObject({ type: 'blindSwap', slot: 1, target: 2 });
   });
 
@@ -222,11 +237,7 @@ describe('RuleBot: Zielwahl bei Gleichstand', () => {
     });
     const targets = new Set(
       Array.from({ length: 40 }, () => {
-        const choice = bot.chooseAction(
-          view,
-          [{ type: 'skipSpecial' }, ...swapsFrom(1, [0, 1])],
-          rng,
-        );
+        const choice = bot.chooseAction(view, swapsFrom(1, [0, 1]), rng);
         return choice.type === 'blindSwap' ? choice.target : -1;
       }),
     );

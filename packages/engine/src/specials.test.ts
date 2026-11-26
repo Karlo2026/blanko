@@ -61,15 +61,28 @@ describe('Sonderkarten', () => {
     expect(view.hands[0]?.[2]).toEqual({ kind: 'hidden' });
   });
 
-  it('wartet nach dem Ablegen auf die Wirkung; Verzichten beendet den Zug ohne Ereignis', () => {
+  it('verlangt nach dem Ablegen die Wirkung: nur Ziele sind erlaubt, kein Verzicht (Hausregel)', () => {
     const state = discarded(8);
     expect(state.phase).toEqual({ kind: 'special', rank: 8 });
     expect(state.current).toBe(0);
     expect(getPlayerView(state, 0).specialRank).toBe(8);
-    expect(legalActions(state)).toContainEqual({ type: 'skipSpecial' });
-    const { state: after, events } = play(state, [{ type: 'skipSpecial' }]);
-    expect(events).toEqual([]);
-    expect(after.current).toBe(1);
+    expect(new Set(legalActions(state).map((a) => a.type))).toEqual(new Set(['peekOwn']));
+  });
+
+  it('beendet den Zug ohne Sonderschritt, wenn es kein mögliches Ziel gibt', () => {
+    // Zwei Spieler, der Gegner hat geklopft: Eine 10 findet niemanden zum Tauschen.
+    const state = scenario({
+      hands: [
+        [card(1), card(2)],
+        [card(5), card(6)],
+      ],
+      phase: { kind: 'drawn', card: card(10, 'spades') },
+      knocker: 1,
+      turnsAfterKnock: 1,
+    });
+    const { state: after, events } = play(state, [{ type: 'discardDrawn' }]);
+    expect(events.map((e) => e.type)).toEqual(['discarded', 'roundEnded']);
+    expect(after.phase.kind).toBe('roundOver');
   });
 
   it('gilt nur für 8, 9 und 10', () => {
