@@ -86,6 +86,8 @@ export interface AutomaticMove {
 }
 
 const DEFAULT_LEVEL = 'mittel';
+/** Ist ein Mensch am Zug und so lange nicht verbunden, spielt ein Bot der Raum-Stufe für ihn. */
+export const ABSENT_MS = 60_000;
 
 const sameName = (a: string, b: string): boolean => a.toLowerCase() === b.toLowerCase();
 
@@ -366,12 +368,29 @@ export function handle(room: Room, seat: number, message: ClientMessage, rng: Rn
   }
 }
 
-/** Der Zug, den gerade ein Bot rechnen muss, oder null, wenn ein Mensch am Zug ist. */
-export function automaticMove(room: Room): AutomaticMove | null {
+/**
+ * Ab wann der Platz am Zug automatisch gespielt wird: ein Bot sofort, ein abwesender Mensch
+ * ABSENT_MS nach dem Verbindungsabbruch. Null, wenn ein verbundener Mensch dran ist oder keine
+ * Runde läuft.
+ */
+export function automaticFrom(room: Room): number | null {
   const { game } = room;
   if (room.phase !== 'playing' || game === null || game.phase.kind === 'roundOver') return null;
+  const seat = room.seats[game.current];
+  if (seat === undefined) return null;
+  if (seat.kind === 'bot') return 0;
+  return seat.connected || seat.offlineSince === null ? null : seat.offlineSince + ABSENT_MS;
+}
+
+/**
+ * Der Zug, den jetzt ein Bot rechnen muss: für einen Bot oder einen abwesenden Menschen. Ein
+ * vertretener Mensch behält dabei sein volles Wissen; vergessen haben nur Bots.
+ */
+export function automaticMove(room: Room, now: number): AutomaticMove | null {
+  const from = automaticFrom(room);
+  const { game } = room;
+  if (from === null || from > now || game === null) return null;
   const seat = game.current;
-  if (room.seats[seat]?.kind !== 'bot') return null;
   return {
     seat,
     profile: profileOf(room),
@@ -380,15 +399,20 @@ export function automaticMove(room: Room): AutomaticMove | null {
   };
 }
 
-/** Führt einen von einem Bot gerechneten Zug aus, sofern der Tisch noch auf genau diesen Zug wartet. */
-export function applyAutomatic(room: Room, seat: number, action: Action, rng: Rng): RoomResult {
+/**
+ * Führt einen von einem Bot gerechneten Zug aus, sofern der Tisch noch auf genau diesen Zug
+ * wartet. Ist ein vertretener Mensch inzwischen zurück, macht er den Zug selbst.
+ */
+export function applyAutomatic(
+  room: Room,
+  seat: number,
+  action: Action,
+  rng: Rng,
+  now: number,
+): RoomResult {
+  const from = automaticFrom(room);
   const { game } = room;
-  if (
-    room.phase !== 'playing' ||
-    game === null ||
-    game.current !== seat ||
-    !isLegal(game, action)
-  ) {
+  if (from === null || from > now || game?.current !== seat || !isLegal(game, action)) {
     return { room, outbox: [] };
   }
   return play(room, action, rng);

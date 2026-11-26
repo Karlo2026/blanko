@@ -12,7 +12,9 @@ import {
 import type { ClientMessage, ServerMessage } from '@blanko/protocol';
 import { describe, expect, it } from 'vitest';
 import {
+  ABSENT_MS,
   applyAutomatic,
+  automaticFrom,
   automaticMove,
   createRoom,
   disconnect,
@@ -155,8 +157,8 @@ describe('Gastgeber-Rechte', () => {
 function step(room: Room, rng: Rng, choose: (legal: readonly Action[]) => Action): RoomResult {
   const game = room.game;
   if (game === null) throw new Error('kein Spiel');
-  const auto = automaticMove(room);
-  if (auto !== null) return applyAutomatic(room, auto.seat, choose(auto.legal), rng);
+  const auto = automaticMove(room, 0);
+  if (auto !== null) return applyAutomatic(room, auto.seat, choose(auto.legal), rng, 0);
   return handle(room, game.current, { type: 'action', action: choose(legalActions(game)) }, rng);
 }
 
@@ -232,7 +234,7 @@ describe('Züge', () => {
           ),
         ).toHaveLength(1);
       }
-      expect(automaticMove(room)?.seat).toBe(2);
+      expect(automaticMove(room, 0)?.seat).toBe(2);
     }
   });
 
@@ -252,5 +254,48 @@ describe('Züge', () => {
     const next = handle(room, 0, { type: 'nextRound' }, rng);
     expect(next.room.phase).toBe('playing');
     expect(messagesFor(next.outbox, 1, 'update')).toHaveLength(1);
+  });
+});
+
+describe('Abwesende Spieler', () => {
+  /** Gestarteter Raum, in dem Ben (Platz 1) zu Beginn seines Zuges ist. */
+  function bensTurn(): { room: Room; game: GameState } {
+    for (let seed = 1; seed <= 50; seed++) {
+      let { room } = startedRoom(seed);
+      const rng = createRng(seed);
+      for (let i = 0; i < 20 && room.game?.current !== 1; i++) room = step(room, rng, first).room;
+      const game = room.game;
+      if (game?.current === 1 && game.phase.kind === 'turnStart') return { room, game };
+    }
+    throw new Error('Ben kommt nie dran');
+  }
+
+  it('lässt nach einer Minute einen Bot mit vollem Wissen für einen abwesenden Menschen ziehen', () => {
+    const { room: present, game } = bensTurn();
+    expect(automaticFrom(present)).toBeNull();
+    const room = disconnect(present, 1, 1000).room;
+    expect(automaticFrom(room)).toBe(1000 + ABSENT_MS);
+    expect(automaticMove(room, 1000 + ABSENT_MS - 1)).toBeNull();
+    const move = automaticMove(room, 1000 + ABSENT_MS);
+    expect(move?.seat).toBe(1);
+    expect(move?.view).toEqual(getPlayerView(game, 1));
+    const result = applyAutomatic(
+      room,
+      1,
+      first(move?.legal ?? []),
+      createRng(1),
+      1000 + ABSENT_MS,
+    );
+    expect(result.room.game).not.toBe(game);
+    expect(messagesFor(result.outbox, 0, 'update')).toHaveLength(1);
+  });
+
+  it('gibt den Platz zurück, sobald der Mensch wieder da ist', () => {
+    const away = disconnect(bensTurn().room, 1, 0).room;
+    const back = entered(resumeRoom(away, TOKENS[1] ?? '')).room;
+    expect(automaticFrom(back)).toBeNull();
+    expect(automaticMove(back, 10 * ABSENT_MS)).toBeNull();
+    // Ein Bot-Zug, der noch gerechnet wurde, verfällt; Ben zieht selbst.
+    expect(applyAutomatic(back, 1, { type: 'draw' }, createRng(1), 10 * ABSENT_MS).room).toBe(back);
   });
 });

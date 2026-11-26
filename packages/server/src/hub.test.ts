@@ -4,6 +4,7 @@ import { parseProfileFile } from '@blanko/bots';
 import type { ServerMessage } from '@blanko/protocol';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EMPTY_ROOM_MS, Hub, type BotRunner, type Client, type Session } from './hub.ts';
+import { ABSENT_MS } from './room.ts';
 
 const { levels } = parseProfileFile(
   JSON.parse(readFileSync(join(import.meta.dirname, '../../app/public/profiles.json'), 'utf8')),
@@ -41,17 +42,21 @@ const last = <T>(items: readonly T[]): T => {
   return item;
 };
 
-/** Ein Hub mit steuerbarer Uhr; Bots spielen den ersten erlaubten Zug. */
-function testHub(runBot: BotRunner = (request) => Promise.resolve(last(request.legal))) {
-  let clock = 0;
+const firstLegal: BotRunner = (request) => {
+  const action = request.legal[0];
+  return action === undefined ? Promise.reject(new Error('kein Zug')) : Promise.resolve(action);
+};
+
+/** Ein Hub mit falscher Uhr (vi.useFakeTimers); Bots spielen den ersten erlaubten Zug. */
+function testHub(runBot: BotRunner = firstLegal) {
   let tokens = 0;
   const hub = new Hub({
     levels,
     runBot,
     botPauseMs: BOT_PAUSE_MS,
-    now: () => clock,
+    now: () => Date.now(),
     randomToken: () => `00000000-0000-4000-8000-${String(++tokens).padStart(12, '0')}`,
-    randomInt: (max) => (clock + tokens) % max,
+    randomInt: (max) => tokens % max,
   });
   const open = (): { client: FakeClient; session: Session } => {
     const client = fakeClient();
@@ -65,7 +70,7 @@ function testHub(runBot: BotRunner = (request) => Promise.resolve(last(request.l
     open,
     send,
     advance: (ms: number): void => {
-      clock += ms;
+      vi.advanceTimersByTime(ms);
     },
   };
 }
@@ -163,7 +168,7 @@ describe('Hub', () => {
   });
 
   it('lässt Bots erst nach der Pause ziehen', async () => {
-    const runBot = vi.fn<BotRunner>((request) => Promise.resolve(last(request.legal)));
+    const runBot = vi.fn<BotRunner>(firstLegal);
     const t = testHub(runBot);
     const anna = t.open();
     t.send(anna.session, { type: 'create', name: 'Anna' });
@@ -184,6 +189,34 @@ describe('Hub', () => {
     expect(update.view.current === 0 || update.view.phase === 'roundOver').toBe(true);
     expect(runBot).toHaveBeenCalled();
     for (const [request] of runBot.mock.calls) expect(request.view.viewer).not.toBe(0);
+  });
+
+  it('lässt nach einer Minute einen Bot für einen abwesenden Menschen ziehen, bis er zurück ist', async () => {
+    const runBot = vi.fn<BotRunner>(firstLegal);
+    const t = testHub(runBot);
+    const anna = t.open();
+    t.send(anna.session, { type: 'create', name: 'Anna' });
+    const room = last(of(anna.client, 'joined')).room;
+    const ben = t.open();
+    t.send(ben.session, { type: 'join', room, name: 'Ben' });
+    t.send(anna.session, { type: 'start' });
+
+    const seat = last(of(anna.client, 'update')).view.current;
+    const away = seat === 0 ? anna : ben;
+    const { token } = last(of(away.client, 'joined'));
+    away.session.close();
+    await vi.advanceTimersByTimeAsync(ABSENT_MS - 1);
+    expect(runBot).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(runBot).toHaveBeenCalledTimes(1);
+    expect(runBot.mock.calls[0]?.[0].view.viewer).toBe(seat);
+
+    // Nach dem Ziehen ist er zurück und entscheidet selbst, wohin die Karte kommt.
+    const back = t.open();
+    t.send(back.session, { type: 'resume', room, token });
+    expect(last(of(back.client, 'update')).legal.length).toBeGreaterThan(0);
+    await vi.advanceTimersByTimeAsync(10 * ABSENT_MS);
+    expect(runBot).toHaveBeenCalledTimes(1);
   });
 
   it('löscht Räume erst 30 Minuten nachdem der letzte Mensch gegangen ist', () => {

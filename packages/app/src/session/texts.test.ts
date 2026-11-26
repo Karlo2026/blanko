@@ -36,7 +36,7 @@ describe('Statuszeile', () => {
   it('sagt, wenn der Tisch auf jemanden wartet, der offline ist', () => {
     const offline = new Set([1]);
     expect(offlineText(names, viewWith({ current: 1 }), offline)).toBe(
-      'Karl ist offline, der Tisch wartet.',
+      'Karl ist offline; spätestens nach einer Minute zieht ein Bot für Karl.',
     );
     expect(offlineText(names, viewWith({ current: 2 }), offline)).toBe('');
   });

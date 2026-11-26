@@ -70,14 +70,18 @@ export function statusText(lastMove: string, names: readonly string[], view: Pla
   return parts.join(' ');
 }
 
-/** Online: Der Tisch wartet auf jemanden, der gerade nicht verbunden ist. */
+/**
+ * Online: Der Tisch wartet auf jemanden, der gerade nicht verbunden ist. Nach einer Minute zieht
+ * der Server mit einem Bot für ihn (siehe ADR 0009).
+ */
 export function offlineText(
   names: readonly string[],
   view: PlayerView,
   offline: ReadonlySet<number>,
 ): string {
   if (view.phase === 'roundOver' || !offline.has(view.current)) return '';
-  return `${names[view.current] ?? '?'} ist offline, der Tisch wartet.`;
+  const name = names[view.current] ?? '?';
+  return `${name} ist offline; spätestens nach einer Minute zieht ein Bot für ${name}.`;
 }
 
 /** Hinweiszeile: was man gerade tun kann. */

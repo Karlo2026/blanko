@@ -8,6 +8,7 @@ import {
 } from '@blanko/protocol';
 import {
   applyAutomatic,
+  automaticFrom,
   automaticMove,
   createRoom,
   disconnect,
@@ -179,16 +180,27 @@ export class Hub {
     this.scheduleBot(entry);
   }
 
-  /** Nach einer sichtbaren Pause rechnet ein Worker den Zug; gilt nur, wenn der Tisch noch darauf wartet. */
+  /**
+   * Plant den nächsten automatischen Zug: für einen Bot nach einer sichtbaren Pause, für einen
+   * abwesenden Menschen, sobald er ABSENT_MS weg ist. Erst beim Auslösen wird geprüft, ob der Tisch
+   * noch darauf wartet; ein zurückgekehrter Mensch zieht dann selbst.
+   */
   private scheduleBot(entry: RoomEntry): void {
     if (entry.botBusy) return;
-    const move = automaticMove(entry.room);
-    if (move === null) return;
+    const from = automaticFrom(entry.room);
+    if (from === null) return;
     entry.botBusy = true;
     const game: GameState | null = entry.room.game;
+    const delay = Math.max(this.options.botPauseMs, from - this.options.now());
     setTimeout(() => {
       // Ein inzwischen gelöschter Raum spielt nicht unsichtbar weiter.
       if (this.rooms.get(entry.room.code) !== entry) return;
+      const move = automaticMove(entry.room, this.options.now());
+      if (move === null || entry.room.game !== game) {
+        entry.botBusy = false;
+        this.scheduleBot(entry);
+        return;
+      }
       void this.options
         .runBot({
           profile: move.profile,
@@ -199,15 +211,18 @@ export class Hub {
         .then(
           (action) => {
             entry.botBusy = false;
-            if (entry.room.game === game)
-              this.deliver(entry, applyAutomatic(entry.room, move.seat, action, entry.rng));
-            else this.scheduleBot(entry);
+            if (entry.room.game !== game) {
+              this.scheduleBot(entry);
+              return;
+            }
+            const now = this.options.now();
+            this.deliver(entry, applyAutomatic(entry.room, move.seat, action, entry.rng, now));
           },
           () => {
             entry.botBusy = false;
           },
         );
-    }, this.options.botPauseMs);
+    }, delay);
   }
 
   /** Löscht Räume, in denen seit EMPTY_ROOM_MS kein Mensch mehr verbunden ist. */
