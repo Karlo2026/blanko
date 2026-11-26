@@ -1,15 +1,23 @@
 # Blanko
 
-App für das Kartenspiel „Blanko“: ein Mensch spielt allein gegen Computergegner.
+App für das Kartenspiel „Blanko“: allein gegen Computergegner oder online mit Freunden an einem
+Tisch, freie Plätze füllen Bots.
 
 - **Labor (Mac, Node):** Bots spielen tausende Partien gegeneinander, um Strategien zu finden und
   Schwierigkeitsstufen zu erzeugen und zu vermessen.
-- **App (iPhone, PWA):** Spiel gegen 1 bis 5 Bots mit vier festen Stufen und einem dynamischen Modus.
+- **App (iPhone, PWA):** Spiel gegen 1 bis 5 Bots mit festen Stufen und einem dynamischen Modus,
+  dazu „Online spielen“ über einen Raum-Link.
+- **Server (Node):** Mehrspieler-Räume über WebSocket; nur er kennt das ganze Spiel.
 
-Beide nutzen dieselbe Engine und dieselben Bots.
+Alle nutzen dieselbe Engine und dieselben Bots.
 
 ## Stand
 
+- Phase 10 „Online-Mehrspieler“: Freunde spielen über einen Raum-Link `…/?raum=CODE` an einem
+  Tisch, freie Plätze füllen Bots. Wer länger als eine Minute weg ist, während er am Zug ist, wird
+  von einem Bot vertreten. Server in `packages/server`, Nachrichten in `packages/protocol`
+  ([ADR 0009](docs/adr/0009-mehrspieler.md)). Der Einzelspielermodus bleibt unverändert und offline
+  nutzbar.
 - Alle 9 Phasen sind abgeschlossen. Phase 9 „Gegner lesen“ macht den IsmctsBot zum stärksten Bot;
   in der App spielt er als fünfte Stufe „Großmeister“ ([ADR 0008](docs/adr/0008-gegner-lesen.md)).
 - Phase 1 bis 8: die iPhone-App ist spielbar und offline nutzbar
@@ -74,6 +82,7 @@ Im Wurzelverzeichnis, jeweils für alle Pakete:
 | `npm run format`       | formatiert alles mit Prettier                           |
 | `npm run format:check` | prüft die Formatierung                                  |
 | `npm run check`        | alles oben Genannte nacheinander, Abschluss jeder Phase |
+| `npm run server`       | Mehrspieler-Server lokal auf Port 10000                 |
 
 Labor (Ergebnisse als JSON, CSV und Markdown in `packages/lab/results/`):
 
@@ -133,6 +142,30 @@ betretenen Platz. Für zwei ganz getrennte Spieler ein privates Fenster nehmen.
 
 Ohne `VITE_SERVER_URL` gibt es kein „Online spielen“; der Einzelspielermodus bleibt unverändert
 und offline nutzbar.
+
+### Auf Render veröffentlichen
+
+1. Auf render.com „New → Web Service“ und dieses Repository verbinden.
+2. Einstellungen:
+
+   | Feld          | Wert                               |
+   | ------------- | ---------------------------------- |
+   | Runtime       | Node                               |
+   | Build-Befehl  | `npm ci`                           |
+   | Start-Befehl  | `node packages/server/src/main.ts` |
+   | Health Check  | `/health`                          |
+   | Instance Type | Free                               |
+
+   Die Node-Version (≥ 24) kommt aus `engines` in der `package.json`; sonst die Umgebungsvariable
+   `NODE_VERSION=24` setzen. `PORT` setzt Render selbst.
+
+3. Die Adresse des Dienstes als Repository-Variable `BLANKO_SERVER_URL` eintragen, etwa
+   `wss://blanko-xxxx.onrender.com`. Das geht unter GitHub → Settings → Secrets and variables →
+   Actions → Variables.
+4. Den Workflow „App veröffentlichen“ neu starten. Danach zeigt die App „Online spielen“.
+
+Der Gratis-Plan schläft nach 15 Minuten ohne Verbindung. Das erste Verbinden weckt ihn, das dauert
+bis zu einer Minute, und die App zeigt solange „Server wird geweckt …“.
 
 ## Aufbau
 

@@ -24,15 +24,17 @@ export function OnlineStart({ invitedTo, memory, onEnter, onBack }: OnlineStartP
       {seat === null || invitedTo !== '' ? null : (
         <>
           <h2>Zurück an den Tisch</h2>
-          <button
-            type="button"
-            className="main-button knock"
-            onClick={() => {
-              onEnter(seat, memory.name);
-            }}
-          >
-            Raum {seat.room}
-          </button>
+          <div className="button-row">
+            <button
+              type="button"
+              className="main-button knock"
+              onClick={() => {
+                onEnter(seat, memory.name);
+              }}
+            >
+              Raum {seat.room}
+            </button>
+          </div>
         </>
       )}
       <h2>
@@ -52,16 +54,18 @@ export function OnlineStart({ invitedTo, memory, onEnter, onBack }: OnlineStartP
       {invitedTo === '' ? (
         <>
           <h2>Neuer Tisch</h2>
-          <button
-            type="button"
-            className="main-button knock"
-            disabled={validated === null}
-            onClick={() => {
-              if (validated !== null) onEnter({ type: 'create', name: validated }, validated);
-            }}
-          >
-            Raum erstellen
-          </button>
+          <div className="button-row">
+            <button
+              type="button"
+              className="main-button knock"
+              disabled={validated === null}
+              onClick={() => {
+                if (validated !== null) onEnter({ type: 'create', name: validated }, validated);
+              }}
+            >
+              Raum erstellen
+            </button>
+          </div>
         </>
       ) : null}
       <h2>
